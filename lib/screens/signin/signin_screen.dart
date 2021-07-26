@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:housy_mobile/utils/constants.dart';
 import 'package:housy_mobile/utils/routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SigninScreen extends StatefulWidget {
@@ -26,18 +27,18 @@ class _SigninScreenState extends State<SigninScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: Text(
-          'Sign In',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-      body: Container(
-        alignment: Alignment.center,
-        child: ListView(
-            padding: EdgeInsets.only(left: 40, right: 40, top: 90),
+      // appBar: AppBar(
+      //   backgroundColor: Colors.white,
+      //   elevation: 1,
+      //   title: Text(
+      //     'Sign In',
+      //     style: TextStyle(color: Colors.black),
+      //   ),
+      // ),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 25.h),
+          child: Column(
             children: [
               SizedBox(
                 width: double.infinity,
@@ -56,7 +57,9 @@ class _SigninScreenState extends State<SigninScreen> {
                   ],
                 ),
               ),
-            ]),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -223,6 +226,34 @@ class _SigninScreenState extends State<SigninScreen> {
               style: TextStyle(
                 color: Colors.white,
               ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Container(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Don't have an account?",
+                    style: TextStyle(
+                      fontSize: 15,
+                    )),
+                SizedBox(
+                  width: 5,
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    RouterGenerator.signupScreen,
+                  ),
+                  child: Text(
+                    "Here",
+                    style: TextStyle(
+                      fontSize: 15,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
