@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:housy_mobile/screens/signin/signin_screen.dart';
-import 'package:housy_mobile/screens/signup/signup_screen.dart';
+import 'package:dev_mobile/screens/signin/signin_screen.dart';
+import 'package:dev_mobile/screens/signup/signup_screen.dart';
 
 class RouterGenerator {
   static const splashScreen = "splash";

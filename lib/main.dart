@@ -1,8 +1,9 @@
 import 'package:animations/animations.dart';
+import 'package:dev_mobile/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:housy_mobile/providers/houses_provider.dart';
-import 'package:housy_mobile/utils/routes.dart';
+import 'package:dev_mobile/providers/houses_provider.dart';
+import 'package:dev_mobile/utils/routes.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -34,20 +35,24 @@ class _MyAppState extends State<MyApp> {
             pageTransitionsTheme: PageTransitionsTheme(
               builders: {
                 TargetPlatform.android: SharedAxisPageTransitionsBuilder(
+                  fillColor: identityColor,
                   transitionType: SharedAxisTransitionType.horizontal,
                 ),
                 TargetPlatform.iOS: SharedAxisPageTransitionsBuilder(
+                  fillColor: identityColor,
                   transitionType: SharedAxisTransitionType.horizontal,
                 ),
               },
             ),
           ),
-          // home: Home(),
           initialRoute: RouterGenerator.signinScreen,
           onGenerateRoute: RouterGenerator.generateRoute,
         ),
       ),
-      designSize: const Size(360, 640),
+      designSize: Size(
+        360,
+        720,
+      ),
     );
   }
 }

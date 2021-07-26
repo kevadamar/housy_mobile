@@ -1,6 +1,6 @@
 {
-    "name": "housy_mobile",
-    "short_name": "housy_mobile",
+    "name": "dev_mobile",
+    "short_name": "dev_mobile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

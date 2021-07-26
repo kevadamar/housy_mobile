@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:housy_mobile/components/input_reuse/input_reuse_component.dart';
-import 'package:housy_mobile/utils/constants.dart';
-import 'package:housy_mobile/utils/routes.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:dev_mobile/components/input_reuse/input_reuse_component.dart';
+import 'package:dev_mobile/utils/constants.dart';
+import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -34,52 +35,61 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Colors.white,
-      //   elevation: 1,
-      //   title: Text(
-      //     'Sign Up',
-      //     style: TextStyle(color: Colors.black),
-      //   ),
-      //   foregroundColor: Colors.black,
-      // ),
-      body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.only(left: 40, right: 40, top: 30),
-          alignment: Alignment.center,
-          child: ListView(
-              padding: EdgeInsets.only(
-                bottom: 30,
+      body: Container(
+        color: identityColor,
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: identityColor,
+              shadowColor: Colors.red,
+              elevation: 0,
+              expandedHeight: 220.h,
+              pinned: true,
+              leading: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                ),
               ),
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: Column(
-                    // crossAxisAlignment: CrossAxisAlignment.center,
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: identityColor,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      _formSignup(),
-                    ],
+              flexibleSpace: FlexibleSpaceBar(
+                centerTitle: true,
+                title: Text(
+                  'Signup',
+                  style: TextStyle(
+                    fontSize: 22.sp,
                   ),
                 ),
-              ]),
+                collapseMode: CollapseMode.pin,
+                background: SvgPicture.asset(
+                  'assets/images/brand.svg',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 35.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(45),
+                    topRight: Radius.circular(45),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    _formSignup(),
+                  ],
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );
   }
 
-  _formSignup() {
+  Form _formSignup() {
     return Form(
       key: _formKey,
       child: Column(
@@ -166,7 +176,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
               icon: const Icon(
-                Icons.arrow_downward,
+                Icons.keyboard_arrow_down,
                 color: Colors.deepPurple,
               ),
               elevation: 16,
@@ -211,7 +221,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
               icon: const Icon(
-                Icons.arrow_downward,
+                Icons.keyboard_arrow_down,
                 color: Colors.deepPurple,
               ),
               elevation: 16,
