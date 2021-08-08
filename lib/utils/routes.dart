@@ -1,18 +1,28 @@
+import 'package:dev_mobile/screens/home/home_screen.dart';
+import 'package:dev_mobile/screens/onboarding/onboarding_screen.dart';
+import 'package:dev_mobile/screens/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:dev_mobile/screens/signin/signin_screen.dart';
 import 'package:dev_mobile/screens/signup/signup_screen.dart';
 
 class RouterGenerator {
-  static const splashScreen = "splash";
+  static const onboardingScreen = "onboarding";
   static const signinScreen = "signin";
   static const signupScreen = "signup";
-  static const userScreen = "user";
+  static const homeScreen = "home";
+  static const splashScreen = "splash";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
     final routeName = settings.name;
 
     switch (routeName) {
+      case splashScreen:
+        return MaterialPageRoute(builder: (_) => SplashScreen());
+      case onboardingScreen:
+        return MaterialPageRoute(builder: (_) => OnboardingScreen());
+      case homeScreen:
+        return MaterialPageRoute(builder: (_) => HomeScreen());
       case signinScreen:
         return MaterialPageRoute(builder: (_) => SigninScreen());
       case signupScreen:

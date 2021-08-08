@@ -6,15 +6,15 @@ class InputReuse extends StatelessWidget {
   final Color color;
   final String label;
   final String type;
-  final Widget? icon;
+  final Widget icon;
   final bool isShowPassword;
   final TextInputType keyboardType;
 
   const InputReuse({
-    Key? key,
-    required this.controller,
-    required this.color,
-    required this.label,
+    Key key,
+    @required this.controller,
+    @required this.color,
+    @required this.label,
     this.icon,
     this.type = "text",
     this.isShowPassword = false,
@@ -31,18 +31,6 @@ class InputReuse extends StatelessWidget {
       maxLines: type == 'multiline' ? 6 : 1,
       maxLength: type == 'multiline' ? 1000 : null,
       decoration: InputDecoration(
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: color,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: color,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
         labelText: '$label',
         labelStyle: TextStyle(
           color: color,
@@ -51,22 +39,26 @@ class InputReuse extends StatelessWidget {
         hintStyle: TextStyle(
           color: color,
         ),
-        focusedErrorBorder: OutlineInputBorder(
+        border: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.red,
+            color: identityColor,
           ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: color,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: color, width: 2),
           borderRadius: BorderRadius.circular(20),
         ),
         suffixIcon: icon == null ? null : icon,
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.red,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
       ),
       validator: (value) {
-        if (value!.isEmpty) {
+        if (value.isEmpty) {
           return '$label is required';
         }
 
@@ -81,10 +73,10 @@ class InputReuse extends StatelessWidget {
         }
 
         // validation format phone number
-        if (!phoneNumberValidatorRegExp.hasMatch(value) &&
-            type == 'phoneNumber') {
+        if (!phoneNumberValidatorRegExp.hasMatch(value) && type == 'phoneNumber') {
           return "Phone Number is not valid";
         }
+        return null;
       },
     );
   }

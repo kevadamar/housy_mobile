@@ -43,7 +43,7 @@ class _SignupScreenState extends State<SignupScreen> {
               backgroundColor: identityColor,
               shadowColor: Colors.red,
               elevation: 0,
-              expandedHeight: 220.h,
+              expandedHeight: setHeight(300),
               pinned: true,
               leading: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -56,24 +56,20 @@ class _SignupScreenState extends State<SignupScreen> {
                 title: Text(
                   'Signup',
                   style: TextStyle(
-                    fontSize: 22.sp,
+                    fontSize: setFontSize(50),
                   ),
                 ),
                 collapseMode: CollapseMode.pin,
-                background: SvgPicture.asset(
-                  'assets/images/brand.svg',
-                  fit: BoxFit.cover,
-                ),
               ),
             ),
             SliverToBoxAdapter(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 35.h),
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 35),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(45),
-                    topRight: Radius.circular(45),
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
                 ),
                 child: Column(
@@ -156,8 +152,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
           // Dropdown input List As
           Container(
-            width: ScreenUtil().screenWidth,
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               // color: identityColor,
               border: Border.all(
@@ -183,9 +179,9 @@ class _SignupScreenState extends State<SignupScreen> {
               style: const TextStyle(color: Colors.deepPurple),
               underline: SizedBox(),
               isExpanded: true,
-              onChanged: (String? newValue) {
+              onChanged: (String newValue) {
                 setState(() {
-                  dropdownValueListAs = newValue!;
+                  dropdownValueListAs = newValue;
                 });
               },
               items: <String>['Tenant', 'Owner']
@@ -201,8 +197,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
           // Dropdown input List As
           Container(
-            width: ScreenUtil().screenWidth,
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               // color: identityColor,
               border: Border.all(
@@ -228,9 +224,9 @@ class _SignupScreenState extends State<SignupScreen> {
               style: const TextStyle(color: Colors.deepPurple),
               underline: SizedBox(),
               isExpanded: true,
-              onChanged: (String? newValue) {
+              onChanged: (String newValue) {
                 setState(() {
-                  dropdownValueGender = newValue!;
+                  dropdownValueGender = newValue;
                 });
               },
               items: <String>['Male', 'Female']

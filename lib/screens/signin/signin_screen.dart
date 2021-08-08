@@ -1,4 +1,5 @@
 import 'package:dev_mobile/components/input_reuse/input_reuse_component.dart';
+import 'package:dev_mobile/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/routes.dart';
@@ -6,7 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SigninScreen extends StatefulWidget {
-  const SigninScreen({Key? key}) : super(key: key);
+  const SigninScreen({Key key}) : super(key: key);
 
   @override
   _SigninScreenState createState() => _SigninScreenState();
@@ -15,112 +16,100 @@ class SigninScreen extends StatefulWidget {
 class _SigninScreenState extends State<SigninScreen> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
+  final services = Services();
 
   final _formKey = GlobalKey<FormState>();
   final List<String> errors = [];
 
   bool _secureText = true;
-  bool isDisabled = false;
 
-  bool _emailError = false;
-  bool _passwordError = false;
+  bool isLoading = false;
+
+  Future<void> handleSignin() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final response = await services.signin(email.text, password.text);
+
+      final msg = response['message'];
+      final status = response['status'];
+
+      final snackBar = SnackBar(
+        content: Text(
+          msg,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevation: 3,
+        duration: Duration(
+          milliseconds: 2500,
+        ),
+        backgroundColor: status == 200 ? Colors.green[400] : Colors.red[700],
+        width: 300, // Width of the SnackBar.
+        padding: EdgeInsets.symmetric(
+          horizontal: 8.0, // Inner padding for SnackBar content.
+        ),
+        behavior: SnackBarBehavior.floating,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      );
+
+      setState(() {
+        isLoading = false;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          RouterGenerator.homeScreen,
+          (route) => false,
+        );
+      });
+    } catch (e) {
+      print('error : $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    setStatusBar(brightness: Brightness.light);
+    setupScreenUtil(context);
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: identityColor,
-            shadowColor: Colors.red,
-            elevation: 0,
-            expandedHeight: 220.h,
-            pinned: true,
-            leading: IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: Icon(
-                Icons.arrow_back_ios,
-              ),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              title: Text(
-                'Signin',
-                style: TextStyle(
-                  fontSize: 22.sp,
-                ),
-              ),
-              collapseMode: CollapseMode.pin,
-              background: SvgPicture.asset(
-                'assets/images/brand.svg',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: BoxDecoration(
-                color: identityColor,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.red,
-                  ),
-                ],
-              ),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 35.h),
-                margin: EdgeInsets.only(bottom: 0),
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(45),
-                    topRight: Radius.circular(45),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    _formSignin(),
-                  ],
-                ),
-              ),
-            ),
-          )
-        ],
+      resizeToAvoidBottomInset: false,
+      backgroundColor: identityColor,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: identityColor,
+        title: Text('Sign In'),
       ),
-    );
-  }
-
-  Widget _safeArea() {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 25.h),
-        child: Column(
-          children: [
-            SizedBox(
-              width: double.infinity,
+      body: Column(
+        children: <Widget>[
+          SizedBox(
+            height: 130,
+          ),
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 35),
+              margin: EdgeInsets.only(bottom: 0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+              ),
               child: Column(
-                // crossAxisAlignment: CrossAxisAlignment.center,
-                // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SvgPicture.asset(
-                    'assets/images/brand.svg',
-                    width: 250,
-                  ),
-                  SizedBox(
-                    height: 40,
-                  ),
                   _formSignin(),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -131,7 +120,7 @@ class _SigninScreenState extends State<SigninScreen> {
       child: Column(
         children: [
           SizedBox(
-            height: 20.h,
+            height: 20,
           ),
 
           // email
@@ -139,7 +128,7 @@ class _SigninScreenState extends State<SigninScreen> {
             controller: email,
             color: identityColor,
             label: "Email",
-            type: "email",
+            type: 'email',
             keyboardType: TextInputType.emailAddress,
             icon: Padding(
               padding: const EdgeInsetsDirectional.only(
@@ -151,62 +140,7 @@ class _SigninScreenState extends State<SigninScreen> {
               ),
             ),
           ),
-          // TextFormField(
-          //   controller: email,
-          //   keyboardType: TextInputType.emailAddress,
-          //   decoration: InputDecoration(
-          //     enabledBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: identityColor,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     focusedBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: identityColor,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     labelText: "Email",
-          //     labelStyle: TextStyle(
-          //       color: identityColor,
-          //     ),
-          //     hintText: "Enter Your Email",
-          //     hintStyle: TextStyle(
-          //       color: identityColor,
-          //     ),
-          //     focusedErrorBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: Colors.red,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     errorBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: Colors.red,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     suffixIcon: Padding(
-          //       padding: const EdgeInsetsDirectional.only(
-          //         end: 12.0,
-          //       ),
-          //       child: Icon(
-          //         Icons.mail_outlined,
-          //         color: identityColor,
-          //       ),
-          //     ),
-          //   ),
-          //   validator: (value) {
-          //     if (value!.isEmpty) {
-          //       return "Email is required";
-          //     }
-          //     if (!emailValidatorRegExp.hasMatch(value)) {
-          //       return "Format Email is not valid";
-          //     }
-          //   },
-          // ),
-          SizedBox(height: 40.h),
+          SizedBox(height: 40),
 
           // password
           InputReuse(
@@ -225,7 +159,6 @@ class _SigninScreenState extends State<SigninScreen> {
                   setState(() {
                     _secureText = !_secureText;
                   });
-                  ;
                 },
                 icon: Icon(
                   _secureText
@@ -236,73 +169,8 @@ class _SigninScreenState extends State<SigninScreen> {
               ),
             ),
           ),
-          // TextFormField(
-          //   controller: password,
-          //   keyboardType: TextInputType.visiblePassword,
-          //   obscureText: _secureText,
-          //   decoration: InputDecoration(
-          //     enabledBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: identityColor,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     focusedBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: identityColor,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     focusedErrorBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: identityColor,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     errorBorder: OutlineInputBorder(
-          //       borderSide: BorderSide(
-          //         color: Colors.red,
-          //       ),
-          //       borderRadius: BorderRadius.circular(20),
-          //     ),
-          //     labelText: "Password",
-          //     labelStyle: TextStyle(
-          //       color: identityColor,
-          //     ),
-          //     hintText: "Enter Your Password",
-          //     hintStyle: TextStyle(
-          //       color: identityColor,
-          //     ),
-          //     suffixIcon: Padding(
-          //       padding: const EdgeInsetsDirectional.only(
-          //         end: 5,
-          //       ),
-          //       child: IconButton(
-          //         onPressed: () {
-          //           setState(() {
-          //             _secureText = !_secureText;
-          //           });
-          //           ;
-          //         },
-          //         icon: Icon(
-          //           _secureText
-          //               ? Icons.lock_outlined
-          //               : Icons.lock_open_outlined,
-          //           color: identityColor,
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          //   validator: (value) {
-          //     if (value!.isEmpty) {
-          //       return "Password is required";
-          //     }
-          //     if (value.length <= 8) {
-          //       return "Min 8 character";
-          //     }
-          //   },
-          // ),
-          SizedBox(height: 20.h),
+
+          SizedBox(height: 20),
 
           // forgot password
           Row(
@@ -318,12 +186,14 @@ class _SigninScreenState extends State<SigninScreen> {
               )
             ],
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 20),
           MaterialButton(
-            minWidth: 400.w,
+            minWidth: 400,
             onPressed: () {
-              if (_emailError || _passwordError) {
-                print('err email or password');
+              final isValid = _formKey.currentState.validate();
+              FocusScope.of(context).unfocus();
+              if (isValid) {
+                handleSignin();
               }
             },
             color: identityColor,
@@ -336,17 +206,17 @@ class _SigninScreenState extends State<SigninScreen> {
               ),
             ),
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 20),
           Container(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text("Don't have an account?",
                     style: TextStyle(
-                      fontSize: 15.sp,
+                      fontSize: 15,
                     )),
                 SizedBox(
-                  width: 5.w,
+                  width: 5,
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pushNamed(
@@ -356,7 +226,7 @@ class _SigninScreenState extends State<SigninScreen> {
                   child: Text(
                     "Here",
                     style: TextStyle(
-                      fontSize: 15.sp,
+                      fontSize: 15,
                       decoration: TextDecoration.underline,
                     ),
                   ),
