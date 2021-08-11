@@ -82,14 +82,25 @@ class _SigninScreenState extends State<SigninScreen> {
       resizeToAvoidBottomInset: false,
       backgroundColor: identityColor,
       appBar: AppBar(
+        brightness: Brightness.light,
         elevation: 0,
         backgroundColor: identityColor,
-        title: Text('Sign In'),
       ),
       body: Column(
         children: <Widget>[
           SizedBox(
-            height: 130,
+            height: 100,
+          ),
+          Text(
+            'Sign In',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: setFontSize(80),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(
+            height: 30,
           ),
           Expanded(
             child: Container(

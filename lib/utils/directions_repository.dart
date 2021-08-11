@@ -9,10 +9,6 @@ class DirectionsRepository {
   static const String _baseUrlMaps =
       'https://maps.gooleapis.com/maps/api/directions/json?';
 
-  // final Dio _dio = Dio();
-
-  // DirectionsRepository({Dio dio}) : _dio = dio ??  Dio();
-
   Future<DirectionsModel> getDirections(
       {@required LatLng origin, @required LatLng destination}) async {
     String googleAPIKey = 'API-KEY';

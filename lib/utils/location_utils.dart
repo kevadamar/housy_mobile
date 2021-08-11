@@ -35,8 +35,8 @@ class LocationUtils {
   Future<String> getAddress() async {
     var addresses = await Geocoder.local
         .findAddressesFromCoordinates(Coordinates(latitude, longitude));
-    print(addresses.first.adminArea);
-    city = addresses.first.adminArea;
+    print(addresses.first.subAdminArea);
+    city = addresses.first.subAdminArea;
     return addresses.first.addressLine;
   }
 }

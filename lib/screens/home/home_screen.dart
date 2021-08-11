@@ -1,20 +1,18 @@
+import 'dart:async';
+
 import 'package:dev_mobile/components/search_item/search_item_component.dart';
-import 'package:dev_mobile/models/directions_model.dart';
+import 'package:dev_mobile/components/shimmer_effect/shimmer_effect_component.dart';
+
 import 'package:dev_mobile/models/house_model.dart';
 import 'package:dev_mobile/providers/location_providers.dart';
 import 'package:dev_mobile/services/services.dart';
 import 'package:dev_mobile/utils/api.dart';
 import 'package:dev_mobile/utils/constants.dart';
-import 'package:dev_mobile/utils/directions_repository.dart';
+
 import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -24,36 +22,28 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   var searchController = TextEditingController();
   List<Widget> listData = [];
   List<Widget> listDataDisekitar = [];
   List<HouseModel> listDisekitar = [];
   bool isLoading = false;
 
-  TabController _tabController;
+  final GlobalKey<RefreshIndicatorState> _refresh =
+      GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _tabController = TabController(
-      length: 3,
-      vsync: this,
-    );
     _fetchData();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _tabController.dispose();
   }
 
   Future<void> _fetchData() async {
     setState(() {
       isLoading = true;
+      listDataDisekitar = [];
+      listDisekitar = [];
     });
     final response = await Services.instance.getHouses();
 
@@ -61,14 +51,12 @@ class _HomeScreenState extends State<HomeScreen>
     final status = response['status'];
     final data = response['data'];
     data.forEach((api) {
-      listData.add(_cardItem(HouseModel.fromJson(api)));
-      listDataDisekitar.add(_cardItemDisekitar(HouseModel.fromJson(api)));
+      // listData.add(_cardItem(HouseModel.fromJson(api)));
+      // listDataDisekitar.add(_cardItemDisekitar(HouseModel.fromJson(api)));
       listDisekitar.add(HouseModel.fromJson(api));
     });
 
-    setState(() {
-      isLoading = false;
-    });
+    Timer(Duration(seconds: 2), () => setState(() => isLoading = false));
   }
 
   getCoder() async {
@@ -96,208 +84,322 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBar(
         backgroundColor: identityColor,
         elevation: 0,
-        title: SearchItem(controller: searchController),
+        title: SearchItem(
+          controller: searchController,
+          readOnly: true,
+        ),
       ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Container(
-                color: identityColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _locationWidget(),
+      body: RefreshIndicator(
+        onRefresh: _fetchData,
+        key: _refresh,
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Container(
+                  color: identityColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _locationWidget(),
+                  ),
                 ),
-              ),
-              Expanded(
-                flex: 1,
-                child: ListView(
-                  shrinkWrap: true,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 12,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        'Rumah Disekitar anda',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                Expanded(
+                  flex: 1,
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: <Widget>[
+                      SizedBox(
+                        height: 12,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          'Rumah disekitar anda',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      height: 250,
-                      child: ListView(
-                        physics: BouncingScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        children: isLoading
-                            ? [CircularProgressIndicator()]
-                            : listDataDisekitar,
+                      SizedBox(
+                        height: 10,
                       ),
-                    ),
-                    SizedBox(
-                      height: 12,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        'Rekomendasi Rumah',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      Container(
+                        height: 250,
+                        child: ListView(
+                          physics: BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          children: isLoading
+                              ? [
+                                  ...List.generate(
+                                      5, (index) => _shimmerEffectCard()),
+                                ]
+                              : List.generate(
+                                  listDisekitar.length,
+                                  (index) => _cardItemDisekitar(
+                                      context, listDisekitar[index])),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      child: GridView.count(
-                        physics: NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.82,
-                        children: List.generate(listDisekitar.length, (index) {
-                          return _cardItemDisekitar(listDisekitar[index]);
-                        }),
+                      SizedBox(
+                        height: 12,
                       ),
-                    ),
-                    SizedBox(
-                      height: 40,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Positioned(
-              bottom: 20,
-              child: Container(
-                color: Colors.transparent,
-                width: deviceWidth(),
-                height: 100,
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 4.0,
-                          offset: Offset(0, 1),
-                        ),
-                      ]),
-                  margin: EdgeInsets.symmetric(horizontal: 30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pushNamed(
-                          RouterGenerator.signinScreen,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  color: identityColor,
-                                  borderRadius: BorderRadius.circular(50)),
-                              child: Icon(
-                                Icons.calendar_today,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text('Booking'),
-                          ],
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          'Rumah',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => null,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  color: identityColor,
-                                  borderRadius: BorderRadius.circular(50)),
-                              child: Icon(
-                                Icons.history_edu,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text('Riwayat'),
-                          ],
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Container(
+                        child: GridView.count(
+                          physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.82,
+                          children: isLoading
+                              ? [
+                                  ...List.generate(
+                                      4, (index) => _shimmerEffectCard()),
+                                ]
+                              : List.generate(
+                                  listDisekitar.length,
+                                  (index) => _cardItemDisekitar(
+                                      context, listDisekitar[index])),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => null,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  color: identityColor,
-                                  borderRadius: BorderRadius.circular(50)),
-                              child: Icon(
-                                Icons.account_circle_outlined,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text('Akun'),
-                          ],
-                        ),
+                      SizedBox(
+                        height: setHeight(200),
                       ),
                     ],
                   ),
                 ),
-              ))
-        ],
-        alignment: AlignmentDirectional.bottomCenter,
+              ],
+            ),
+            navigation(),
+          ],
+          alignment: AlignmentDirectional.bottomCenter,
+        ),
       ),
     );
   }
+
+  Widget navigation() {
+    return Positioned(
+        bottom: 30,
+        child: Container(
+          color: Colors.transparent,
+          width: deviceWidth(),
+          height: setHeight(200),
+          child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4.0,
+                    offset: Offset(0, 1),
+                  ),
+                ]),
+            margin: EdgeInsets.symmetric(horizontal: 30),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pushNamed(
+                    RouterGenerator.signinScreen,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: identityColor,
+                            borderRadius: BorderRadius.circular(50)),
+                        child: Icon(
+                          Icons.calendar_today,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text('Booking'),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => null,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: identityColor,
+                            borderRadius: BorderRadius.circular(50)),
+                        child: Icon(
+                          Icons.history_edu,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text('Riwayat'),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => null,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: identityColor,
+                            borderRadius: BorderRadius.circular(50)),
+                        child: Icon(
+                          Icons.account_circle_outlined,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text('Akun'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
 }
 
-Widget _customScrollView(bool isLoading, List listData) {
-  return CustomScrollView(
-    physics: BouncingScrollPhysics(),
-    slivers: <Widget>[
-      SliverGrid(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.72,
-        ),
-        delegate: SliverChildListDelegate(
-          isLoading ? [BodyWidget(Colors.red)] : listData,
+_shimmerEffectLocaton() => ShimmerEffect(
+      widget: Container(
+        child: Text(
+          'Location . . . . .',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-    ],
-  );
-}
+    );
 
-Widget _cardItemDisekitar(HouseModel data) {
+_shimmerEffectCard() => Container(
+      padding: EdgeInsets.all(10),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 3.0,
+              blurRadius: 5.0,
+            )
+          ],
+          color: Colors.white,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.only(topRight: Radius.circular(15)),
+              child: ShimmerEffect(
+                widget: Container(
+                  width: 210,
+                  height: 90,
+                  color: Colors.grey[400],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Container(
+              padding: EdgeInsets.only(left: 5, right: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ShimmerEffect(
+                    widget: Container(
+                      height: 20,
+                      width: 130,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  ShimmerEffect(
+                    widget: Container(
+                      height: 20,
+                      width: 100,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  ShimmerEffect(
+                    widget: Container(
+                      height: 22,
+                      width: 200,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Row(
+                    children: [
+                      ShimmerEffect(
+                        widget: Container(
+                          height: 20,
+                          width: 20,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      ShimmerEffect(
+                        widget: Container(
+                          height: 20,
+                          width: setWidth(320),
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+
+Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
   return Container(
     padding: EdgeInsets.all(10),
-    child: InkWell(
-      onTap: () => print(data.id),
-      borderRadius: BorderRadius.circular(15),
+    child: GestureDetector(
+      onTap: () => Navigator.pushNamed(
+          context, RouterGenerator.detailProductScreen,
+          arguments: data),
       child: Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
@@ -384,7 +486,7 @@ Widget _cardItemDisekitar(HouseModel data) {
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             )
@@ -514,7 +616,7 @@ Widget _locationWidget() {
 
                 if (locationProv.address == null) {
                   locationProv.loadLocation();
-                  return CircularProgressIndicator();
+                  return _shimmerEffectLocaton();
                 }
 
                 return Expanded(
@@ -533,19 +635,4 @@ Widget _locationWidget() {
       ],
     ),
   );
-}
-
-class BodyWidget extends StatelessWidget {
-  final Color color;
-
-  BodyWidget(this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 100.0,
-      color: color,
-      alignment: Alignment.center,
-    );
-  }
 }

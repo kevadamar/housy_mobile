@@ -5,6 +5,9 @@ class HouseModel {
   String price;
   String description;
   String image;
+  String imageFirst;
+  String imageSecond;
+  String imageThird;
   String city;
   String bedroom;
   String bathroom;
@@ -18,6 +21,9 @@ class HouseModel {
     this.price,
     this.description,
     this.image,
+    this.imageFirst,
+    this.imageSecond,
+    this.imageThird,
     this.city,
     this.bedroom,
     this.bathroom,
@@ -33,6 +39,9 @@ class HouseModel {
       price: json['price'],
       description: json['description'],
       image: json['image'],
+      imageFirst: json['imageFirst'],
+      imageSecond: json['imageSecond'],
+      imageThird: json['imageThird'],
       city: json['city']['name'],
       bedroom: json['bedroom'].toString(),
       bathroom: json['bathroom'].toString(),

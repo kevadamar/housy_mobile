@@ -1,3 +1,4 @@
+import 'package:dev_mobile/components/shimmer_effect/shimmer_effect_component.dart';
 import 'package:dev_mobile/providers/location_providers.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/routes.dart';
@@ -29,7 +30,7 @@ class _SearchItemState extends State<SearchItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 40,
+      height: 35,
       decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: identityColor.withOpacity(0.5)),
@@ -46,7 +47,7 @@ class _SearchItemState extends State<SearchItem> {
             SizedBox(width: 5),
             Consumer<LocationProvider>(builder: (context, locationProv, _) {
               if (locationProv.city == null) {
-                return CircularProgressIndicator();
+                return _shimmerEffectPlaceholder();
               }
 
               return Expanded(
@@ -77,4 +78,17 @@ class _SearchItemState extends State<SearchItem> {
       ),
     );
   }
+
+  Widget _shimmerEffectPlaceholder() => ShimmerEffect(
+        widget: Container(
+          child: Text(
+            'Search . . . . .',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
 }

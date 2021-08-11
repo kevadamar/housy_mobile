@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:dev_mobile/components/input_reuse/input_reuse_component.dart';
@@ -43,20 +45,28 @@ class _SignupScreenState extends State<SignupScreen> {
               backgroundColor: identityColor,
               shadowColor: Colors.red,
               elevation: 0,
-              expandedHeight: setHeight(300),
+              expandedHeight: setHeight(500),
               pinned: true,
               leading: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                ),
+                icon: Platform.isAndroid
+                    ? Icon(
+                        Icons.arrow_back,
+                      )
+                    : Icon(
+                        Icons.arrow_back_ios,
+                      ),
               ),
               flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
-                title: Text(
-                  'Signup',
-                  style: TextStyle(
-                    fontSize: setFontSize(50),
+                title: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    'Sign Up',
+                    style: TextStyle(
+                      fontSize: setFontSize(50),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 collapseMode: CollapseMode.pin,
