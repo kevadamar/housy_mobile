@@ -4,7 +4,7 @@ import 'package:dev_mobile/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class CustomAppBar extends PreferredSize {
+class CustomAppBarBookNow extends PreferredSize {
   @override
   Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
 
@@ -20,14 +20,15 @@ class CustomAppBar extends PreferredSize {
                 height: 50.w,
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: identityColor,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.3),
+                        blurRadius: 1,
                       ),
                     ]),
                 child: IconButton(
-                  color: identityColor,
+                  color: Colors.white,
                   onPressed: () => Navigator.of(context).pop(),
                   icon: Platform.isAndroid
                       ? Icon(

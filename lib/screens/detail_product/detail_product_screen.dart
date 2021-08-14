@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:dev_mobile/components/custom_appbar/custom_appbar_component.dart';
+import 'package:dev_mobile/models/book_now_model.dart';
 import 'package:dev_mobile/models/house_model.dart';
 import 'package:dev_mobile/utils/api.dart';
 import 'package:dev_mobile/utils/constants.dart';
+import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DetailScreen extends StatefulWidget {
   final HouseModel house;
@@ -44,17 +47,25 @@ class _DetailScreenState extends State<DetailScreen> {
 
   Widget floatingBookNow() {
     return Positioned(
-      bottom: deviceHeight() * 0.05,
+      bottom: 0.03.sh,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
               width: deviceWidth(),
-              height: setHeight(110),
+              height: 50.h,
               child: LayoutBuilder(builder: (context, constraints) {
                 return GestureDetector(
-                  onTap: () => print('book'),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    RouterGenerator.bookNowScreen,
+                    arguments: BookNowModel.obj(
+                      widget.house.id,
+                      widget.house.image,
+                      widget.house.price,
+                    ),
+                  ),
                   child: Align(
                     alignment: Alignment.center,
                     child: Container(
@@ -84,7 +95,7 @@ class _DetailScreenState extends State<DetailScreen> {
       HouseModel house, String selectedImg, Function setState) {
     return [
       SizedBox(
-        width: deviceWidth() * 0.7,
+        width: deviceWidth(),
         height: deviceHeight() * 0.3,
         child: AspectRatio(
           aspectRatio: 1,
@@ -134,7 +145,7 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget detailProductInformation(HouseModel house) => Container(
         margin: EdgeInsets.only(top: 20),
         padding: EdgeInsets.only(
-          top: 20,
+          top: 25.h,
           left: 12,
           right: 12,
         ),
@@ -144,6 +155,12 @@ class _DetailScreenState extends State<DetailScreen> {
             topLeft: Radius.circular(40),
             topRight: Radius.circular(40),
           ),
+          boxShadow: [
+            BoxShadow(
+                spreadRadius: 0.1,
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10.0)
+          ],
           color: Colors.white,
         ),
         child: Column(
@@ -152,7 +169,7 @@ class _DetailScreenState extends State<DetailScreen> {
             Text(
               house.name,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: setFontSize(24),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -164,7 +181,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 Icon(
                   Icons.location_pin,
                   color: identityColor,
-                  size: 14,
+                  size: 14.sp,
                 ),
                 SizedBox(
                   width: 5,
@@ -174,7 +191,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: Colors.grey,
                   ),
                 ),
@@ -183,45 +200,44 @@ class _DetailScreenState extends State<DetailScreen> {
             SizedBox(
               height: 10,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${formatRupiah(house.price)},-/${house.typeRent}',
-                  style: TextStyle(
-                    fontSize: 19,
-                    color: Colors.red[600],
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                Text(
-                  '${house.bedroom} Beds, ${house.bathroom} Baths, ${house.area} Sqft',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            // Text(widget.house.description.length.toString()),
-            Container(
-              width: deviceWidth(),
-              child: Text(
-                house.description,
-                maxLines: 10,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  height: 1.4,
-                ),
+            Text(
+              '${formatRupiah(house.price.toString())},-/${house.typeRent}',
+              style: TextStyle(
+                fontSize: 17.sp,
+                color: Colors.red[600],
+                fontWeight: FontWeight.w400,
               ),
             ),
             SizedBox(
               height: 8,
             ),
-            if (house.description.length >= 693)
+            Text(
+              '${house.bedroom} Beds, ${house.bathroom} Baths, ${house.area} Sqft',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            // Text(widget.house.description.length.toString()),
+            // Container(
+            //   width: deviceWidth(),
+            //   child:
+            // ),
+            Text(
+              house.description,
+              maxLines: 6,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                height: 1.4,
+              ),
+            ),
+            SizedBox(
+              height: 8,
+            ),
+            if (house.description.length >= 358)
               GestureDetector(
                 onTap: () => print('see more'),
                 child: Row(
@@ -253,15 +269,18 @@ class _DetailScreenState extends State<DetailScreen> {
       onTap: () => setState(),
       child: Container(
         padding: EdgeInsets.all(4),
-        width: setWidth(150),
-        height: setHeight(100),
+        width: 80.w,
+        height: 53.w,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
               color: selectedImg == image ? identityColor : Colors.transparent),
         ),
-        child: Image.network(Api().baseUrlImg + image),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.network(Api().baseUrlImg + image),
+        ),
       ),
     );
   }

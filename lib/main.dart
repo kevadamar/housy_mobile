@@ -2,11 +2,13 @@ import 'package:animations/animations.dart';
 import 'package:dev_mobile/providers/location_providers.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/injector.dart';
+import 'package:dev_mobile/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dev_mobile/providers/houses_provider.dart';
 import 'package:dev_mobile/utils/routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -34,27 +36,46 @@ class _MyAppState extends State<MyApp> {
           create: (context) => LocationProvider(),
         )
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Housy',
-        theme: ThemeData(
-          // primarySwatch: MaterialColor(primary, swatch),
-          // scaffoldBackgroundColor: Colors.white,
-          pageTransitionsTheme: PageTransitionsTheme(
-            builders: {
-              TargetPlatform.android: SharedAxisPageTransitionsBuilder(
-                // fillColor: identityColor,
-                transitionType: SharedAxisTransitionType.vertical,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          SizeConfig().init(constraints);
+          return ScreenUtilInit(
+            designSize: Size(constraints.maxWidth, constraints.maxHeight),
+            builder: () => MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'Housy',
+              theme: ThemeData(
+                primarySwatch: MaterialColor(0xFF5a57ab, {
+                  50: identityColor,
+                  100: identityColor,
+                  200: identityColor,
+                  300: identityColor,
+                  400: identityColor,
+                  500: identityColor,
+                  600: identityColor,
+                  700: identityColor,
+                  800: identityColor,
+                  900: identityColor,
+                }),
+                // scaffoldBackgroundColor: Colors.white,
+                pageTransitionsTheme: PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: SharedAxisPageTransitionsBuilder(
+                      // fillColor: identityColor,
+                      transitionType: SharedAxisTransitionType.vertical,
+                    ),
+                    TargetPlatform.iOS: SharedAxisPageTransitionsBuilder(
+                      // fillColor: identityColor,
+                      transitionType: SharedAxisTransitionType.vertical,
+                    ),
+                  },
+                ),
               ),
-              TargetPlatform.iOS: SharedAxisPageTransitionsBuilder(
-                // fillColor: identityColor,
-                transitionType: SharedAxisTransitionType.vertical,
-              ),
-            },
-          ),
-        ),
-        initialRoute: RouterGenerator.splashScreen,
-        onGenerateRoute: RouterGenerator.generateRoute,
+              initialRoute: RouterGenerator.splashScreen,
+              onGenerateRoute: RouterGenerator.generateRoute,
+            ),
+          );
+        },
       ),
     );
   }

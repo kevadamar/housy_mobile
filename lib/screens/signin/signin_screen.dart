@@ -77,7 +77,7 @@ class _SigninScreenState extends State<SigninScreen> {
   @override
   Widget build(BuildContext context) {
     setStatusBar(brightness: Brightness.light);
-    setupScreenUtil(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: identityColor,
@@ -95,7 +95,7 @@ class _SigninScreenState extends State<SigninScreen> {
             'Sign In',
             style: TextStyle(
               color: Colors.white,
-              fontSize: setFontSize(80),
+              fontSize: setFontSize(40),
               fontWeight: FontWeight.bold,
             ),
           ),

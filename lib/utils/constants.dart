@@ -19,8 +19,8 @@ String formatRupiah(String money) =>
 /// ------------
 /// Device Size
 /// ------------
-double deviceWidth() => ScreenUtil.screenWidth;
-double deviceHeight() => ScreenUtil.screenHeight;
+double deviceWidth() => ScreenUtil().screenWidth;
+double deviceHeight() => ScreenUtil().screenHeight;
 
 double getWidthScreen(context) => MediaQuery.of(context).size.width;
 double getHeightScreen(context) => MediaQuery.of(context).size.height;
@@ -37,13 +37,12 @@ void setStatusBar({Brightness brightness = Brightness.dark}) {
 /// Font and size scaling screen utils
 /// -----------------------------------
 /// Initialize screen util
-void setupScreenUtil(BuildContext context) =>
-    ScreenUtil.init(context, allowFontScaling: true);
+// void setupScreenUtil(BuildContext context) =>
+//     ScreenUtil.init(context, allowFontScaling: true);
 
 // Setting height and width
 double setWidth(double width) => ScreenUtil().setWidth(width);
 double setHeight(double height) => ScreenUtil().setHeight(height);
 
 // Setting fontsize
-double setFontSize(double size) =>
-    ScreenUtil().setSp(size, allowFontScalingSelf: true);
+double setFontSize(double size) => size.sp;

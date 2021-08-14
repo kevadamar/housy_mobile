@@ -45,7 +45,7 @@ class _SignupScreenState extends State<SignupScreen> {
               backgroundColor: identityColor,
               shadowColor: Colors.red,
               elevation: 0,
-              expandedHeight: setHeight(500),
+              expandedHeight: deviceHeight() * 0.28,
               pinned: true,
               leading: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -64,7 +64,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: Text(
                     'Sign Up',
                     style: TextStyle(
-                      fontSize: setFontSize(50),
+                      fontSize: setFontSize(30),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

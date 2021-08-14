@@ -35,7 +35,7 @@ dependencies:
   # shared prefrences for manage local data
   shared_preferences: ^2.0.6
   # Responsive screen
-  flutter_screenutil: ^2.3.0
+  flutter_screenutil: ^5.0.0+2
   # shimmer effect
   shimmer: ^2.0.0
   # handle image picked
@@ -53,12 +53,15 @@ dependencies:
   google_maps_flutter: ^2.0.1
   # polylines map
   flutter_polyline_points: ^1.0.0
+  # toast alert
+  fluttertoast: ^8.0.8
 
+  # geocoder & location
   geocoder: ^0.2.1
   get_it: ^7.2.0
   location: ^4.3.0
   geolocator: ^7.4.0
-
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

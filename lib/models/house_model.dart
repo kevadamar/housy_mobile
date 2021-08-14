@@ -2,7 +2,7 @@ class HouseModel {
   int id;
   String name;
   String address;
-  String price;
+  int price;
   String description;
   String image;
   String imageFirst;
@@ -36,7 +36,7 @@ class HouseModel {
       id: json['id'],
       name: json['name'],
       address: json['address'],
-      price: json['price'],
+      price: int.parse(json['price']),
       description: json['description'],
       image: json['image'],
       imageFirst: json['imageFirst'],

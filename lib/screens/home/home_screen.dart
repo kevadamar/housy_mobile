@@ -10,7 +10,10 @@ import 'package:dev_mobile/utils/api.dart';
 import 'package:dev_mobile/utils/constants.dart';
 
 import 'package:dev_mobile/utils/routes.dart';
+import 'package:dev_mobile/utils/size_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Widget> listDataDisekitar = [];
   List<HouseModel> listDisekitar = [];
   bool isLoading = false;
+  DateTime timedBackPressed = DateTime.now();
 
   final GlobalKey<RefreshIndicatorState> _refresh =
       GlobalKey<RefreshIndicatorState>();
@@ -76,114 +80,137 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    setupScreenUtil(context);
     setStatusBar(brightness: Brightness.light);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: identityColor,
-        elevation: 0,
-        title: SearchItem(
-          controller: searchController,
-          readOnly: true,
+    return WillPopScope(
+      onWillPop: () async {
+        print('ww ');
+        final difference = DateTime.now().difference(timedBackPressed);
+        final isExitWarn = difference >= Duration(seconds: 2);
+
+        timedBackPressed = DateTime.now();
+        if (isExitWarn) {
+          Fluttertoast.showToast(msg: "Press back again to exit", fontSize: 18);
+          return false;
+        } else {
+          Fluttertoast.cancel();
+          return true;
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: identityColor,
+          elevation: 0,
+          title: SearchItem(
+            controller: searchController,
+            readOnly: true,
+          ),
         ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _fetchData,
-        key: _refresh,
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Container(
-                  color: identityColor,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: _locationWidget(),
+        body: RefreshIndicator(
+          onRefresh: _fetchData,
+          key: _refresh,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Container(
+                    color: identityColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: _locationWidget(),
+                    ),
                   ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: <Widget>[
-                      SizedBox(
-                        height: 12,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          'Rumah disekitar anda',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                  Expanded(
+                    flex: 1,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: <Widget>[
+                        SizedBox(
+                          height: 12,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            'Rumah disekitar anda',
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        height: 250,
-                        child: ListView(
-                          physics: BouncingScrollPhysics(),
-                          scrollDirection: Axis.horizontal,
-                          children: isLoading
-                              ? [
-                                  ...List.generate(
-                                      5, (index) => _shimmerEffectCard()),
-                                ]
-                              : List.generate(
-                                  listDisekitar.length,
-                                  (index) => _cardItemDisekitar(
-                                      context, listDisekitar[index])),
+                        SizedBox(
+                          height: 10,
                         ),
-                      ),
-                      SizedBox(
-                        height: 12,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          'Rumah',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                              maxHeight: 0.30.sh, minHeight: 0.25.sh),
+                          child: ListView(
+                            shrinkWrap: true,
+                            physics: BouncingScrollPhysics(),
+                            scrollDirection: Axis.horizontal,
+                            children: isLoading
+                                ? [
+                                    ...List.generate(
+                                      5,
+                                      (index) => _shimmerEffectCard(),
+                                    ),
+                                  ]
+                                : List.generate(
+                                    listDisekitar.length,
+                                    (index) => _cardItemDisekitar(
+                                        context, listDisekitar[index]),
+                                  ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        child: GridView.count(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.82,
-                          children: isLoading
-                              ? [
-                                  ...List.generate(
-                                      4, (index) => _shimmerEffectCard()),
-                                ]
-                              : List.generate(
-                                  listDisekitar.length,
-                                  (index) => _cardItemDisekitar(
-                                      context, listDisekitar[index])),
+                        SizedBox(
+                          height: 12,
                         ),
-                      ),
-                      SizedBox(
-                        height: setHeight(200),
-                      ),
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            'Rumah',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Column(mainAxisSize: MainAxisSize.max, children: [
+                          GridView.count(
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.82.h,
+                            children: isLoading
+                                ? [
+                                    ...List.generate(
+                                      4,
+                                      (index) => _shimmerEffectCard(),
+                                    ),
+                                  ]
+                                : List.generate(
+                                    listDisekitar.length,
+                                    (index) => _cardItem(
+                                        context, listDisekitar[index]),
+                                  ),
+                          ),
+                        ]),
+                        SizedBox(
+                          height: 100.h,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            navigation(),
-          ],
-          alignment: AlignmentDirectional.bottomCenter,
+                ],
+              ),
+              navigation(),
+            ],
+            alignment: AlignmentDirectional.bottomCenter,
+          ),
         ),
       ),
     );
@@ -195,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           color: Colors.transparent,
           width: deviceWidth(),
-          height: setHeight(200),
+          height: setHeight(100),
           child: Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(50),
@@ -379,7 +406,7 @@ _shimmerEffectCard() => Container(
                       ShimmerEffect(
                         widget: Container(
                           height: 20,
-                          width: setWidth(320),
+                          width: setWidth(150),
                           color: Colors.grey[400],
                         ),
                       ),
@@ -394,13 +421,14 @@ _shimmerEffectCard() => Container(
     );
 
 Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
-  return Container(
+  return Padding(
     padding: EdgeInsets.all(10),
     child: GestureDetector(
       onTap: () => Navigator.pushNamed(
           context, RouterGenerator.detailProductScreen,
           arguments: data),
       child: Container(
+        width: 200.w,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
@@ -419,8 +447,8 @@ Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
               child: Image.network(
                 Api().baseUrlImg + data.image,
                 fit: BoxFit.cover,
-                width: 210,
-                height: 90,
+                width: 1.sw,
+                height: 0.1.sh,
               ),
             ),
             SizedBox(
@@ -437,18 +465,20 @@ Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 15.sp,
                     ),
                   ),
                   SizedBox(
                     height: 8,
                   ),
                   Text(
-                    formatRupiah(data.price),
+                    formatRupiah(data.price.toString()),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.red[600],
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 17.5.sp,
                     ),
                   ),
                   SizedBox(
@@ -460,7 +490,7 @@ Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                      fontSize: 15.sp,
                     ),
                   ),
                   SizedBox(
@@ -471,18 +501,20 @@ Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
                       Icon(
                         Icons.location_pin,
                         color: identityColor,
-                        size: 14,
+                        size: 15.sp,
                       ),
                       SizedBox(
                         width: 5,
                       ),
-                      Text(
-                        data.city,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
+                      Expanded(
+                        child: Text(
+                          data.city,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ],
@@ -497,13 +529,15 @@ Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
   );
 }
 
-Widget _cardItem(HouseModel data) {
+Widget _cardItem(BuildContext context, HouseModel data) {
   return Padding(
     padding: EdgeInsets.all(10),
-    child: InkWell(
-      onTap: () => print(data.id),
-      borderRadius: BorderRadius.circular(15),
+    child: GestureDetector(
+      onTap: () => Navigator.pushNamed(
+          context, RouterGenerator.detailProductScreen,
+          arguments: data),
       child: Container(
+        width: 200.w,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
@@ -522,8 +556,8 @@ Widget _cardItem(HouseModel data) {
               child: Image.network(
                 Api().baseUrlImg + data.image,
                 fit: BoxFit.cover,
-                width: 210,
-                height: 120,
+                width: 1.sw,
+                height: 0.1.sh,
               ),
             ),
             SizedBox(
@@ -540,18 +574,20 @@ Widget _cardItem(HouseModel data) {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 15.sp,
                     ),
                   ),
                   SizedBox(
                     height: 8,
                   ),
                   Text(
-                    formatRupiah(data.price),
+                    formatRupiah(data.price.toString()),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.red[600],
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 17.5.sp,
                     ),
                   ),
                   SizedBox(
@@ -563,7 +599,7 @@ Widget _cardItem(HouseModel data) {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                      fontSize: 15.sp,
                     ),
                   ),
                   SizedBox(
@@ -574,22 +610,24 @@ Widget _cardItem(HouseModel data) {
                       Icon(
                         Icons.location_pin,
                         color: identityColor,
-                        size: 14,
+                        size: 15.sp,
                       ),
                       SizedBox(
                         width: 5,
                       ),
-                      Text(
-                        data.city,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
+                      Expanded(
+                        child: Text(
+                          data.city,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             )

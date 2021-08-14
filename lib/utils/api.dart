@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class Api {
-  final String baseUrl = "http://192.168.1.4:5000/api/v1";
-  final String baseUrlImg = "http://192.168.1.4:5000/uploads/";
+  final String baseUrl = "http://192.168.1.2:5000/api/v1";
+  final String baseUrlImg = "http://192.168.1.2:5000/uploads/";
 
   Future<dynamic> getDataApi(String pathUrl) async {
     final responseData = await http.get(Uri.parse('$baseUrl$pathUrl'));

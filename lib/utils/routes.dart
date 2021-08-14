@@ -1,4 +1,6 @@
+import 'package:dev_mobile/models/book_now_model.dart';
 import 'package:dev_mobile/models/house_model.dart';
+import 'package:dev_mobile/screens/book_now/book_now_screen.dart';
 import 'package:dev_mobile/screens/detail_product/detail_product_screen.dart';
 import 'package:dev_mobile/screens/home/home_screen.dart';
 import 'package:dev_mobile/screens/onboarding/onboarding_screen.dart';
@@ -13,6 +15,7 @@ class RouterGenerator {
   static const signupScreen = "signup";
   static const homeScreen = "home";
   static const detailProductScreen = "detailProduct";
+  static const bookNowScreen = "bookNow";
   static const splashScreen = "splash";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -29,7 +32,15 @@ class RouterGenerator {
       case detailProductScreen:
         final houseArgs = args as HouseModel;
         return MaterialPageRoute(
-            builder: (_) => DetailScreen(house: houseArgs));
+          builder: (_) => DetailScreen(house: houseArgs),
+        );
+      case bookNowScreen:
+        final houseIdArgs = args as BookNowModel;
+        return MaterialPageRoute(
+          builder: (_) => BookNowScreen(
+            bookHouse: houseIdArgs,
+          ),
+        );
       case signinScreen:
         return MaterialPageRoute(builder: (_) => SigninScreen());
       case signupScreen:
