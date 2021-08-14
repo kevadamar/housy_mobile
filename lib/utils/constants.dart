@@ -33,13 +33,6 @@ void setStatusBar({Brightness brightness = Brightness.dark}) {
       statusBarColor: Colors.transparent, statusBarIconBrightness: brightness));
 }
 
-/// -----------------------------------
-/// Font and size scaling screen utils
-/// -----------------------------------
-/// Initialize screen util
-// void setupScreenUtil(BuildContext context) =>
-//     ScreenUtil.init(context, allowFontScaling: true);
-
 // Setting height and width
 double setWidth(double width) => ScreenUtil().setWidth(width);
 double setHeight(double height) => ScreenUtil().setHeight(height);
