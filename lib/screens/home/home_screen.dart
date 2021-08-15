@@ -27,8 +27,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var searchController = TextEditingController();
-  List<Widget> listData = [];
-  List<Widget> listDataDisekitar = [];
+  List<HouseModel> listData = [];
+
   List<HouseModel> listDisekitar = [];
   bool isLoading = false;
   DateTime timedBackPressed = DateTime.now();
@@ -39,15 +39,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    super.initState();
+
     _fetchData();
   }
 
   Future<void> _fetchData() async {
+    // await _fetchDataHousesDisekitar();
+    await _fetchDataHouses();
+  }
+
+  Future<void> _fetchDataHouses() async {
     setState(() {
       isLoading = true;
-      listDataDisekitar = [];
-      listDisekitar = [];
+
+      listData = [];
     });
     final response = await Services.instance.getHouses();
 
@@ -55,12 +60,33 @@ class _HomeScreenState extends State<HomeScreen> {
     final status = response['status'];
     final data = response['data'];
     data.forEach((api) {
-      // listData.add(_cardItem(HouseModel.fromJson(api)));
-      // listDataDisekitar.add(_cardItemDisekitar(HouseModel.fromJson(api)));
-      listDisekitar.add(HouseModel.fromJson(api));
+      listData.add(HouseModel.fromJson(api));
     });
 
-    Timer(Duration(seconds: 2), () => setState(() => isLoading = false));
+    // Timer(Duration(seconds: 3), () => setState(() => isLoading = false));
+    setState(() => isLoading = false);
+  }
+
+  Future<void> _fetchDataHousesDisekitar(String city) async {
+    // setState(() {
+    //   isLoading = true;
+
+    //   listDisekitar = [];
+    // });
+    final response = await Services.instance.getHousesDisekitar(city);
+
+    final msg = response['message'];
+    final status = response['status'];
+    final data = response['data'];
+    print('cal $city');
+    if (data.length > 0) {
+      data.forEach((api) {
+        listDisekitar.add(HouseModel.fromJson(api));
+      });
+    }
+
+    // Timer(Duration(seconds: 3), () => setState(() => isLoading = false));
+    // setState(() => isLoading = false);
   }
 
   getCoder() async {
@@ -145,23 +171,38 @@ class _HomeScreenState extends State<HomeScreen> {
                         ConstrainedBox(
                           constraints: BoxConstraints(
                               maxHeight: 0.30.sh, minHeight: 0.25.sh),
-                          child: ListView(
-                            shrinkWrap: true,
-                            physics: BouncingScrollPhysics(),
-                            scrollDirection: Axis.horizontal,
-                            children: isLoading
-                                ? [
+                          child: Consumer<LocationProvider>(
+                              builder: (context, value, child) {
+                            if (value.city == null) {
+                              return ListView(
+                                  shrinkWrap: true,
+                                  physics: BouncingScrollPhysics(),
+                                  scrollDirection: Axis.horizontal,
+                                  children: [
                                     ...List.generate(
                                       5,
                                       (index) => _shimmerEffectCard(),
                                     ),
-                                  ]
-                                : List.generate(
-                                    listDisekitar.length,
-                                    (index) => _cardItemDisekitar(
-                                        context, listDisekitar[index]),
-                                  ),
-                          ),
+                                  ]);
+                            }
+                            _fetchDataHousesDisekitar(value.city);
+                            return ListView(
+                              shrinkWrap: true,
+                              physics: BouncingScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              children: listDisekitar.length > 0
+                                  ? List.generate(
+                                      listDisekitar.length,
+                                      (index) => _cardItemDisekitar(
+                                          context, listDisekitar[index]),
+                                    )
+                                  : List.generate(
+                                      listData.length,
+                                      (index) => _cardItemDisekitar(
+                                          context, listData[index]),
+                                    ),
+                            );
+                          }),
                         ),
                         SizedBox(
                           height: 12,
@@ -193,9 +234,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ]
                                 : List.generate(
-                                    listDisekitar.length,
-                                    (index) => _cardItem(
-                                        context, listDisekitar[index]),
+                                    listData.length,
+                                    (index) =>
+                                        _cardItem(context, listData[index]),
                                   ),
                           ),
                         ]),

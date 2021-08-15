@@ -1,4 +1,5 @@
 import 'package:animations/animations.dart';
+import 'package:dev_mobile/providers/book_now_provider.dart';
 import 'package:dev_mobile/providers/location_providers.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/injector.dart';
@@ -34,7 +35,10 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider(
           create: (context) => LocationProvider(),
-        )
+        ),
+        ChangeNotifierProvider(
+          create: (context) => BookNowProvider(),
+        ),
       ],
       child: LayoutBuilder(
         builder: (context, constraints) {

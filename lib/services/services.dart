@@ -10,4 +10,6 @@ class Services {
   Future<dynamic> signin(String email, String password) =>
       _authServices.signin(email, password);
   Future<dynamic> getHouses() => _houseServices.getHouses();
+  Future<dynamic> getHousesDisekitar(String city) =>
+      _houseServices.getHousesDisekitar(city);
 }

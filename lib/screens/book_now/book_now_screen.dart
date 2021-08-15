@@ -40,31 +40,23 @@ class _BookNowScreenState extends State<BookNowScreen> {
       backgroundColor: identityColor,
       appBar: CustomAppBarBookNow(),
       body: SafeArea(
-          child: Stack(
-        children: [
-          Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Container(
-                height: 0.22.sh,
-                width: 1.sw,
-                padding: EdgeInsets.only(top: 5.h),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Image.network(Api().baseUrlImg + houseImg),
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              height: 0.35.sh,
+              width: 1.sw,
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
+              child: Image.network(
+                Api().baseUrlImg + houseImg,
+                fit: BoxFit.fitWidth,
               ),
-              BookNowContent(
-                price: price,
-              ),
-            ],
-          ),
-          FloatingButton(
-            titleButton: "order now",
-            cb: (event) => handleCallback(event),
-          ),
-        ],
-      )),
+            ),
+            BookNowContent(),
+          ],
+        ),
+      ),
+      bottomSheet: FloatingButton(),
     );
   }
 }

@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:dev_mobile/components/custom_appbar/custom_appbar_component.dart';
 import 'package:dev_mobile/models/book_now_model.dart';
 import 'package:dev_mobile/models/house_model.dart';
+import 'package:dev_mobile/providers/book_now_provider.dart';
 import 'package:dev_mobile/utils/api.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class DetailScreen extends StatefulWidget {
   final HouseModel house;
@@ -25,6 +27,9 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bookNowProvider =
+        Provider.of<BookNowProvider>(context, listen: false);
+
     return Scaffold(
       appBar: CustomAppBar(),
       body: Stack(
@@ -39,13 +44,13 @@ class _DetailScreenState extends State<DetailScreen> {
               Expanded(flex: 1, child: detailProductInformation(widget.house)),
             ],
           ),
-          floatingBookNow(),
+          floatingBookNow(bookNowProvider),
         ],
       ),
     );
   }
 
-  Widget floatingBookNow() {
+  Widget floatingBookNow(BookNowProvider provider) {
     return Positioned(
       bottom: 0.03.sh,
       child: Row(
@@ -57,15 +62,19 @@ class _DetailScreenState extends State<DetailScreen> {
               height: 50.h,
               child: LayoutBuilder(builder: (context, constraints) {
                 return GestureDetector(
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    RouterGenerator.bookNowScreen,
-                    arguments: BookNowModel.obj(
-                      widget.house.id,
-                      widget.house.image,
-                      widget.house.price,
-                    ),
-                  ),
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      RouterGenerator.bookNowScreen,
+                      arguments: BookNowModel.obj(
+                        widget.house.id,
+                        widget.house.image,
+                        widget.house.price,
+                      ),
+                    );
+                    provider.setBookNowProvider(
+                        widget.house.price, widget.house.id);
+                  },
                   child: Align(
                     alignment: Alignment.center,
                     child: Container(
@@ -94,13 +103,17 @@ class _DetailScreenState extends State<DetailScreen> {
   List<Widget> imagePreview(
       HouseModel house, String selectedImg, Function setState) {
     return [
-      SizedBox(
+      Container(
         width: deviceWidth(),
         height: deviceHeight() * 0.3,
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: Image.network(Api().baseUrlImg + selectedImg),
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+        child: Image.network(
+          Api().baseUrlImg + selectedImg,
+          fit: BoxFit.fill,
         ),
+      ),
+      SizedBox(
+        height: 10,
       ),
       Row(
         mainAxisAlignment: MainAxisAlignment.center,

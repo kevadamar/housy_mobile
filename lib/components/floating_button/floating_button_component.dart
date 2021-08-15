@@ -1,49 +1,69 @@
+import 'package:dev_mobile/providers/book_now_provider.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class FloatingButton extends StatelessWidget {
-  final String titleButton;
-  final Function cb;
-  const FloatingButton({Key key, @required this.titleButton, this.cb})
-      : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      bottom: 0.03.sh,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-              width: deviceWidth(),
-              height: 50.h,
-              child: LayoutBuilder(builder: (context, constraints) {
-                return GestureDetector(
-                  onTap: () => cb('clicked book now'),
-                  child: Align(
+    final bookNowProvider = Provider.of<BookNowProvider>(context);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+            width: deviceWidth(),
+            height: 100.h,
+            decoration: BoxDecoration(
+              color: identityColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
                     alignment: Alignment.center,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: identityColor,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      width: constraints.maxWidth * 0.8,
-                      alignment: Alignment.center,
-                      child: Text(
-                        titleButton.toUpperCase(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Total Harga",
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          Consumer<BookNowProvider>(
+                            builder: (context, value, child) => Text(
+                              formatRupiah(value.totalPrice.toString()),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 22.sp,
+                              ),
+                            ),
+                          ),
+                        ]),
                   ),
-                );
-              })),
-        ],
-      ),
+                  MaterialButton(
+                    onPressed: () => print(bookNowProvider.houseId),
+                    child: Text("ORDER NOW"),
+                    textColor: identityColor,
+                    color: Colors.white,
+                  )
+                ],
+              ),
+            )),
+      ],
     );
   }
 }
