@@ -10,6 +10,47 @@ final RegExp phoneNumberValidatorRegExp =
 
 Color identityColor = Color.fromRGBO(90, 87, 171, 1);
 
+// parsing date
+parsingDate(String dateStr) {
+  final dateParse = DateTime.parse(dateStr);
+  final dateConv = DateTime(dateParse.year, dateParse.month, dateParse.day);
+
+  return dateConv;
+}
+
+// get long days
+longDays(DateTime dateIn, DateTime dateOut) {
+  Duration duration = dateOut.difference(dateIn);
+
+  return duration.inDays;
+}
+
+// status string
+statusString(int status) {
+  switch (status) {
+    case 0:
+      return 'Canceled';
+      break;
+    case 1:
+      return 'Waiting Payment';
+      break;
+    case 2:
+      return 'Waiting Approve';
+      break;
+    case 3:
+      return 'Approved';
+      break;
+  }
+}
+
+// format date
+
+formatDate(DateTime date) {
+  final f = new DateFormat('dd/MM/yyyy');
+
+  return f.format(date);
+}
+
 // number format rupiah
 
 String formatRupiah(String money) =>

@@ -1,11 +1,17 @@
+import 'package:dev_mobile/models/booking_model.dart';
+import 'package:dev_mobile/screens/detail_booking/detail_booking_screen.dart';
+import 'package:dev_mobile/screens/history/history_screen.dart';
+import 'package:dev_mobile/screens/payment/payment_screen.dart';
+import 'package:dev_mobile/screens/search/search_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:dev_mobile/models/book_now_model.dart';
 import 'package:dev_mobile/models/house_model.dart';
 import 'package:dev_mobile/screens/book_now/book_now_screen.dart';
+import 'package:dev_mobile/screens/booking/booking_screen.dart';
 import 'package:dev_mobile/screens/detail_product/detail_product_screen.dart';
 import 'package:dev_mobile/screens/home/home_screen.dart';
 import 'package:dev_mobile/screens/onboarding/onboarding_screen.dart';
 import 'package:dev_mobile/screens/splash/splash_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:dev_mobile/screens/signin/signin_screen.dart';
 import 'package:dev_mobile/screens/signup/signup_screen.dart';
 
@@ -16,7 +22,12 @@ class RouterGenerator {
   static const homeScreen = "home";
   static const detailProductScreen = "detailProduct";
   static const bookNowScreen = "bookNow";
+  static const bookingScreen = "booking";
+  static const detailBookingScreen = "detailBooking";
+  static const historyScreen = "history";
   static const splashScreen = "splash";
+  static const paymentScreen = "payment";
+  static const searchScreen = "search";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
@@ -45,6 +56,20 @@ class RouterGenerator {
         return MaterialPageRoute(builder: (_) => SigninScreen());
       case signupScreen:
         return MaterialPageRoute(builder: (_) => SignupScreen());
+      case bookingScreen:
+        return MaterialPageRoute(builder: (_) => BookingScreen());
+      case detailBookingScreen:
+        final bookingArgs = args as BookingModel;
+        return MaterialPageRoute(
+            builder: (_) => DetailBookingScreen(
+                  booking: bookingArgs,
+                ));
+      case historyScreen:
+        return MaterialPageRoute(builder: (_) => HistoryScreen());
+      case paymentScreen:
+        return MaterialPageRoute(builder: (_) => PaymentScreen());
+      case searchScreen:
+        return MaterialPageRoute(builder: (_) => SearchScreen());
       default:
         throw ArgumentError('Routing not found!.');
     }

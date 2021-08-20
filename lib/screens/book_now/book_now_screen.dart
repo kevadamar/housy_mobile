@@ -46,10 +46,13 @@ class _BookNowScreenState extends State<BookNowScreen> {
             Container(
               height: 0.35.sh,
               width: 1.sw,
-              padding: EdgeInsets.symmetric(horizontal: 14.w),
-              child: Image.network(
-                Api().baseUrlImg + houseImg,
-                fit: BoxFit.fitWidth,
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(15)),
+                child: Image.network(
+                  Api().baseUrlImg + houseImg,
+                  fit: BoxFit.fitWidth,
+                ),
               ),
             ),
             BookNowContent(),

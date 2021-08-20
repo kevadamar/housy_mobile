@@ -4,6 +4,8 @@ import 'package:dev_mobile/components/search_item/search_item_component.dart';
 import 'package:dev_mobile/components/shimmer_effect/shimmer_effect_component.dart';
 
 import 'package:dev_mobile/models/house_model.dart';
+import 'package:dev_mobile/providers/auth_provider.dart';
+import 'package:dev_mobile/providers/houses_provider.dart';
 import 'package:dev_mobile/providers/location_providers.dart';
 import 'package:dev_mobile/services/services.dart';
 import 'package:dev_mobile/utils/api.dart';
@@ -17,6 +19,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key key}) : super(key: key);
@@ -29,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   var searchController = TextEditingController();
   List<HouseModel> listData = [];
 
-  List<HouseModel> listDisekitar = [];
+  // List<HouseModel> listDisekitar = [];
   bool isLoading = false;
   DateTime timedBackPressed = DateTime.now();
 
@@ -38,55 +41,71 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
-
+    super.initState();
     _fetchData();
+    _checkIsLogin();
+  }
+
+  Future<void> _checkIsLogin() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.get('token');
+
+    print('token $token');
+    if (token != null) {
+      authProvider.setToken(token);
+    }
   }
 
   Future<void> _fetchData() async {
     // await _fetchDataHousesDisekitar();
+
     await _fetchDataHouses();
   }
 
   Future<void> _fetchDataHouses() async {
-    setState(() {
-      isLoading = true;
+    final housesProvider = Provider.of<HousesProvider>(context, listen: false);
 
-      listData = [];
-    });
+    housesProvider.setIsProcessing(true);
+
     final response = await Services.instance.getHouses();
 
     final msg = response['message'];
     final status = response['status'];
     final data = response['data'];
+
+    final List<HouseModel> dataApi = [];
+
     data.forEach((api) {
-      listData.add(HouseModel.fromJson(api));
+      dataApi.add(HouseModel.fromJson(api));
     });
 
-    // Timer(Duration(seconds: 3), () => setState(() => isLoading = false));
-    setState(() => isLoading = false);
+    housesProvider.setData(dataApi);
+
+    housesProvider.setIsProcessing(false);
   }
 
   Future<void> _fetchDataHousesDisekitar(String city) async {
-    // setState(() {
-    //   isLoading = true;
+    final housesProvider = Provider.of<HousesProvider>(context, listen: false);
 
-    //   listDisekitar = [];
-    // });
+    housesProvider.setIsProcessingDisekitar(true);
+
     final response = await Services.instance.getHousesDisekitar(city);
 
     final msg = response['message'];
     final status = response['status'];
     final data = response['data'];
-    print('cal $city');
-    if (data.length > 0) {
-      data.forEach((api) {
-        listDisekitar.add(HouseModel.fromJson(api));
-      });
-    }
 
-    // Timer(Duration(seconds: 3), () => setState(() => isLoading = false));
-    // setState(() => isLoading = false);
+    if (data.length > 0) {
+      final List<HouseModel> dataApi = [];
+      data.forEach((api) {
+        dataApi.add(HouseModel.fromJson(api));
+      });
+
+      housesProvider.setDataSekitar(dataApi);
+    }
+    housesProvider.setIsProcessingDisekitar(false);
   }
 
   getCoder() async {
@@ -108,9 +127,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     setStatusBar(brightness: Brightness.light);
 
+    final locationProvider =
+        Provider.of<LocationProvider>(context, listen: false);
+
     return WillPopScope(
       onWillPop: () async {
-        print('ww ');
         final difference = DateTime.now().difference(timedBackPressed);
         final isExitWarn = difference >= Duration(seconds: 2);
 
@@ -128,13 +149,22 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           backgroundColor: identityColor,
           elevation: 0,
-          title: SearchItem(
-            controller: searchController,
-            readOnly: true,
+          title: Builder(
+            builder: (context) => Consumer<HousesProvider>(
+              builder: (context, value, child) => SearchItem(
+                controller: searchController,
+                readOnly: true,
+                onClick: () => value.routeToSearchHouse(context),
+              ),
+            ),
           ),
         ),
         body: RefreshIndicator(
-          onRefresh: _fetchData,
+          onRefresh: () async {
+            _fetchData();
+            print('loca ${locationProvider.city}');
+            _fetchDataHousesDisekitar(locationProvider.city);
+          },
           key: _refresh,
           child: Stack(
             children: [
@@ -157,12 +187,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(
-                            'Rumah disekitar anda',
-                            style: TextStyle(
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Consumer<HousesProvider>(
+                            builder: (context, value, child) {
+                              String text = 'Rumah disekitar anda';
+
+                              if (value.isProcessingSekitar) {
+                                text = 'Rumah disekitar anda';
+                              }
+
+                              text = value.dataSekitar.length <= 0
+                                  ? 'Rekomendasi rumah untuk anda'
+                                  : 'Rumah disekitar anda';
+
+                              return Text(
+                                text,
+                                style: TextStyle(
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
                           ),
                         ),
                         SizedBox(
@@ -186,21 +230,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ]);
                             }
                             _fetchDataHousesDisekitar(value.city);
-                            return ListView(
-                              shrinkWrap: true,
-                              physics: BouncingScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              children: listDisekitar.length > 0
-                                  ? List.generate(
-                                      listDisekitar.length,
-                                      (index) => _cardItemDisekitar(
-                                          context, listDisekitar[index]),
-                                    )
-                                  : List.generate(
-                                      listData.length,
-                                      (index) => _cardItemDisekitar(
-                                          context, listData[index]),
-                                    ),
+                            return Consumer<HousesProvider>(
+                              builder: (context, value, child) {
+                                if (value.isProcessingSekitar) {
+                                  return ListView(
+                                      shrinkWrap: true,
+                                      physics: BouncingScrollPhysics(),
+                                      scrollDirection: Axis.horizontal,
+                                      children: [
+                                        ...List.generate(
+                                          5,
+                                          (index) => _shimmerEffectCard(),
+                                        ),
+                                      ]);
+                                }
+
+                                return ListView(
+                                  shrinkWrap: true,
+                                  physics: BouncingScrollPhysics(),
+                                  scrollDirection: Axis.horizontal,
+                                  children: value.dataSekitar.length > 0
+                                      ? List.generate(
+                                          value.dataSekitar.length,
+                                          (index) => _cardItemDisekitar(context,
+                                              value.dataSekitar[index]),
+                                        )
+                                      : List.generate(
+                                          value.data.length,
+                                          (index) => _cardItemDisekitar(
+                                              context, value.data[index]),
+                                        ),
+                                );
+                              },
                             );
                           }),
                         ),
@@ -221,23 +282,25 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 10,
                         ),
                         Column(mainAxisSize: MainAxisSize.max, children: [
-                          GridView.count(
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.82.h,
-                            children: isLoading
-                                ? [
-                                    ...List.generate(
-                                      4,
-                                      (index) => _shimmerEffectCard(),
+                          Consumer<HousesProvider>(
+                            builder: (context, value, child) => GridView.count(
+                              physics: NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.82.h,
+                              children: value.isProcessing
+                                  ? [
+                                      ...List.generate(
+                                        4,
+                                        (index) => _shimmerEffectCard(),
+                                      ),
+                                    ]
+                                  : List.generate(
+                                      value.data.length,
+                                      (index) =>
+                                          _cardItem(context, value.data[index]),
                                     ),
-                                  ]
-                                : List.generate(
-                                    listData.length,
-                                    (index) =>
-                                        _cardItem(context, listData[index]),
-                                  ),
+                            ),
                           ),
                         ]),
                         SizedBox(
@@ -259,30 +322,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget navigation() {
     return Positioned(
-        bottom: 30,
+      bottom: 30,
+      child: Container(
+        color: Colors.transparent,
+        width: deviceWidth(),
+        height: setHeight(100),
         child: Container(
-          color: Colors.transparent,
-          width: deviceWidth(),
-          height: setHeight(100),
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 4.0,
-                    offset: Offset(0, 1),
-                  ),
-                ]),
-            margin: EdgeInsets.symmetric(horizontal: 30),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pushNamed(
-                    RouterGenerator.signinScreen,
-                  ),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 4.0,
+                  offset: Offset(0, 1),
+                ),
+              ]),
+          margin: EdgeInsets.symmetric(horizontal: 30),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Consumer<AuthProvider>(
+                builder: (context, value, child) => GestureDetector(
+                  onTap: () {
+                    if (value.token == null) {
+                      Navigator.of(context).pushNamed(
+                        RouterGenerator.signinScreen,
+                      );
+                    } else {
+                      Navigator.of(context).pushNamed(
+                        RouterGenerator.bookingScreen,
+                      );
+                    }
+                  },
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -303,8 +375,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => null,
+              ),
+              Consumer<AuthProvider>(
+                builder: (context, value, child) => GestureDetector(
+                  onTap: () {
+                    if (value.token == null) {
+                      Navigator.of(context).pushNamed(
+                        RouterGenerator.signinScreen,
+                      );
+                    } else {
+                      Navigator.of(context).pushNamed(
+                        RouterGenerator.historyScreen,
+                      );
+                    }
+                  },
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -325,32 +409,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => null,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                            color: identityColor,
-                            borderRadius: BorderRadius.circular(50)),
-                        child: Icon(
-                          Icons.account_circle_outlined,
-                          color: Colors.white,
-                        ),
+              ),
+              GestureDetector(
+                onTap: () => null,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                          color: identityColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: Icon(
+                        Icons.account_circle_outlined,
+                        color: Colors.white,
                       ),
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Text('Akun'),
-                    ],
-                  ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Text('Akun'),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 

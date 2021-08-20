@@ -1,10 +1,13 @@
 import 'package:dev_mobile/components/input_reuse/input_reuse_component.dart';
+import 'package:dev_mobile/providers/auth_provider.dart';
 import 'package:dev_mobile/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({Key key}) : super(key: key);
@@ -31,10 +34,13 @@ class _SigninScreenState extends State<SigninScreen> {
         isLoading = true;
       });
 
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
       final response = await services.signin(email.text, password.text);
 
       final msg = response['message'];
       final status = response['status'];
+      final data = response['data'];
 
       final snackBar = SnackBar(
         content: Text(
@@ -61,6 +67,10 @@ class _SigninScreenState extends State<SigninScreen> {
         ),
       );
 
+      authProvider.setToken(data['token']);
+      _setPrefs(token: data['token']);
+      print(data['token']);
+
       setState(() {
         isLoading = false;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -72,6 +82,12 @@ class _SigninScreenState extends State<SigninScreen> {
     } catch (e) {
       print('error : $e');
     }
+  }
+
+  Future<void> _setPrefs({String token}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    prefs.setString('token', token);
   }
 
   @override

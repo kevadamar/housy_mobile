@@ -23,7 +23,7 @@ class HouseServices {
 
   Future<dynamic> getHousesDisekitar(String city) async {
     try {
-      print(city);
+      city = city.toLowerCase();
       final responseData = await http.get(
         Uri.parse(api.baseUrl + '/houses/location?city=$city'),
       );

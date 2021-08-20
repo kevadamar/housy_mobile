@@ -1,5 +1,8 @@
 import 'package:animations/animations.dart';
+import 'package:dev_mobile/providers/auth_provider.dart';
 import 'package:dev_mobile/providers/book_now_provider.dart';
+import 'package:dev_mobile/providers/booking_provider.dart';
+import 'package:dev_mobile/providers/history_provider.dart';
 import 'package:dev_mobile/providers/location_providers.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/injector.dart';
@@ -38,6 +41,15 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider(
           create: (context) => BookNowProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AuthProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => BookingProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => HistoryProvider(),
         ),
       ],
       child: LayoutBuilder(

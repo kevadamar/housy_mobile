@@ -36,7 +36,7 @@ class HouseModel {
       id: json['id'],
       name: json['name'],
       address: json['address'],
-      price: int.parse(json['price']),
+      price: json['price'] is String ? int.parse(json['price']) : json['price'],
       description: json['description'],
       image: json['image'],
       imageFirst: json['imageFirst'],

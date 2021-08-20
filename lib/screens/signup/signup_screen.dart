@@ -1,11 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:dev_mobile/components/input_reuse/input_reuse_component.dart';
 import 'package:dev_mobile/utils/constants.dart';
-import 'package:dev_mobile/utils/routes.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -161,49 +158,49 @@ class _SignupScreenState extends State<SignupScreen> {
           SizedBox(height: 40),
 
           // Dropdown input List As
-          Container(
-            width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              // color: identityColor,
-              border: Border.all(
-                width: 1,
-                color: identityColor,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: DropdownButton<String>(
-              value: dropdownValueListAs,
-              hint: Text(
-                'List As',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: identityColor,
-                ),
-              ),
-              icon: const Icon(
-                Icons.keyboard_arrow_down,
-                color: Colors.deepPurple,
-              ),
-              elevation: 16,
-              style: const TextStyle(color: Colors.deepPurple),
-              underline: SizedBox(),
-              isExpanded: true,
-              onChanged: (String newValue) {
-                setState(() {
-                  dropdownValueListAs = newValue;
-                });
-              },
-              items: <String>['Tenant', 'Owner']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-          ),
-          SizedBox(height: 40),
+          // Container(
+          //   width: MediaQuery.of(context).size.width,
+          //   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          //   decoration: BoxDecoration(
+          //     // color: identityColor,
+          //     border: Border.all(
+          //       width: 1,
+          //       color: identityColor,
+          //     ),
+          //     borderRadius: BorderRadius.circular(20),
+          //   ),
+          //   child: DropdownButton<String>(
+          //     value: dropdownValueListAs,
+          //     hint: Text(
+          //       'List As',
+          //       style: TextStyle(
+          //         fontWeight: FontWeight.w500,
+          //         color: identityColor,
+          //       ),
+          //     ),
+          //     icon: const Icon(
+          //       Icons.keyboard_arrow_down,
+          //       color: Colors.deepPurple,
+          //     ),
+          //     elevation: 16,
+          //     style: const TextStyle(color: Colors.deepPurple),
+          //     underline: SizedBox(),
+          //     isExpanded: true,
+          //     onChanged: (String newValue) {
+          //       setState(() {
+          //         dropdownValueListAs = newValue;
+          //       });
+          //     },
+          //     items: <String>['Tenant', 'Owner']
+          //         .map<DropdownMenuItem<String>>((String value) {
+          //       return DropdownMenuItem<String>(
+          //         value: value,
+          //         child: Text(value),
+          //       );
+          //     }).toList(),
+          //   ),
+          // ),
+          // SizedBox(height: 40),
 
           // Dropdown input List As
           Container(

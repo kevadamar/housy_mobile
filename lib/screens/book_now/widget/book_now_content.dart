@@ -83,41 +83,6 @@ class BookNowContent extends StatelessWidget {
             SizedBox(
               height: 40.h,
             ),
-            // Container(
-            //   width: 0.85.sw,
-            //   padding: EdgeInsets.all(10.w),
-            //   decoration: BoxDecoration(
-            //       border: Border.all(
-            //         color: Colors.red,
-            //       ),
-            //       borderRadius: BorderRadius.circular(18.0)),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.end,
-            //     children: [
-            //       Text(
-            //         'Total Price',
-            //         style: TextStyle(
-            //           fontSize: 24.sp,
-            //           color: Colors.red,
-            //           fontWeight: FontWeight.bold,
-            //         ),
-            //       ),
-            //       SizedBox(
-            //         height: 15.h,
-            //       ),
-            //       Consumer<BookNowProvider>(
-            //         builder: (context, value, child) => Text(
-            //           formatRupiah(value.totalPrice.toString()),
-            //           style: TextStyle(
-            //             fontSize: 24.sp,
-            //             color: Colors.red,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
           ],
         ),
       ),

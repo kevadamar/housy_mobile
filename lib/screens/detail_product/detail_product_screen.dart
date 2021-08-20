@@ -4,6 +4,7 @@ import 'package:dev_mobile/components/custom_appbar/custom_appbar_component.dart
 import 'package:dev_mobile/models/book_now_model.dart';
 import 'package:dev_mobile/models/house_model.dart';
 import 'package:dev_mobile/providers/book_now_provider.dart';
+import 'package:dev_mobile/providers/houses_provider.dart';
 import 'package:dev_mobile/utils/api.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/routes.dart';
@@ -13,6 +14,7 @@ import 'package:provider/provider.dart';
 
 class DetailScreen extends StatefulWidget {
   final HouseModel house;
+
   const DetailScreen({Key key, @required this.house}) : super(key: key);
 
   @override
@@ -29,9 +31,13 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget build(BuildContext context) {
     final bookNowProvider =
         Provider.of<BookNowProvider>(context, listen: false);
+    final houseProvider = Provider.of<HousesProvider>(context, listen: false);
 
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(
+        routeBack: !houseProvider.fromHome,
+        routeBackCb: RouterGenerator.homeScreen,
+      ),
       body: Stack(
         children: [
           Column(
@@ -107,9 +113,12 @@ class _DetailScreenState extends State<DetailScreen> {
         width: deviceWidth(),
         height: deviceHeight() * 0.3,
         padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-        child: Image.network(
-          Api().baseUrlImg + selectedImg,
-          fit: BoxFit.fill,
+        child: ClipRRect(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+          child: Image.network(
+            Api().baseUrlImg + selectedImg,
+            fit: BoxFit.fill,
+          ),
         ),
       ),
       SizedBox(
@@ -234,45 +243,45 @@ class _DetailScreenState extends State<DetailScreen> {
             SizedBox(
               height: 10,
             ),
-            // Text(widget.house.description.length.toString()),
-            // Container(
-            //   width: deviceWidth(),
-            //   child:
-            // ),
-            Text(
-              house.description,
-              maxLines: 6,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                height: 1.4,
+            Container(
+              height: 0.2.sh,
+              child: ListView(
+                children: [
+                  Text(
+                    house.description,
+                    style: TextStyle(
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
               height: 8,
             ),
-            if (house.description.length >= 358)
-              GestureDetector(
-                onTap: () => print('see more'),
-                child: Row(
-                  children: [
-                    Text(
-                      "See More Detail",
-                      style: TextStyle(
-                        color: identityColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12,
-                      color: identityColor,
-                    )
-                  ],
-                ),
-              ),
+            // if (house.description.length >= 458)
+            //   GestureDetector(
+            //     onTap: () => print('see more'),
+            //     child: Row(
+            //       children: [
+            //         Text(
+            //           "See More Detail",
+            //           style: TextStyle(
+            //             color: identityColor,
+            //             fontWeight: FontWeight.w600,
+            //           ),
+            //         ),
+            //         SizedBox(
+            //           width: 5,
+            //         ),
+            //         Icon(
+            //           Icons.arrow_forward_ios,
+            //           size: 12,
+            //           color: identityColor,
+            //         )
+            //       ],
+            //     ),
+            //   ),
           ],
         ),
       );

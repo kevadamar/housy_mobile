@@ -1,5 +1,6 @@
 import 'package:dev_mobile/providers/book_now_provider.dart';
 import 'package:dev_mobile/utils/constants.dart';
+import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +56,8 @@ class FloatingButton extends StatelessWidget {
                         ]),
                   ),
                   MaterialButton(
-                    onPressed: () => print(bookNowProvider.houseId),
+                    onPressed: () => Navigator.pushReplacementNamed(
+                        context, RouterGenerator.detailBookingScreen),
                     child: Text("ORDER NOW"),
                     textColor: identityColor,
                     color: Colors.white,
