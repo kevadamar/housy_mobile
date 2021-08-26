@@ -1,4 +1,4 @@
-package com.example.housy_mobile
+package com.example.dev_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

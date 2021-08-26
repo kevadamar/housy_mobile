@@ -1,114 +1,98 @@
+import 'package:animations/animations.dart';
+import 'package:dev_mobile/providers/auth_provider.dart';
+import 'package:dev_mobile/providers/book_now_provider.dart';
+import 'package:dev_mobile/providers/booking_provider.dart';
+import 'package:dev_mobile/providers/history_provider.dart';
+import 'package:dev_mobile/providers/location_providers.dart';
+import 'package:dev_mobile/utils/constants.dart';
+import 'package:dev_mobile/utils/injector.dart';
+import 'package:dev_mobile/utils/size_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'package:dev_mobile/providers/houses_provider.dart';
+import 'package:dev_mobile/utils/routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 void main() {
+  setupLocator();
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class MyApp extends StatefulWidget {
+  // This widget is the root of your application.p
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+  _MyAppState createState() => _MyAppState();
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => HousesProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => LocationProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => BookNowProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AuthProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => BookingProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => HistoryProvider(),
+        ),
+      ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          SizeConfig().init(constraints);
+          return ScreenUtilInit(
+            designSize: Size(constraints.maxWidth, constraints.maxHeight),
+            builder: () => MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'Housy',
+              theme: ThemeData(
+                primarySwatch: MaterialColor(0xFF5a57ab, {
+                  50: identityColor,
+                  100: identityColor,
+                  200: identityColor,
+                  300: identityColor,
+                  400: identityColor,
+                  500: identityColor,
+                  600: identityColor,
+                  700: identityColor,
+                  800: identityColor,
+                  900: identityColor,
+                }),
+                // scaffoldBackgroundColor: Colors.white,
+                pageTransitionsTheme: PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: SharedAxisPageTransitionsBuilder(
+                      // fillColor: identityColor,
+                      transitionType: SharedAxisTransitionType.vertical,
+                    ),
+                    TargetPlatform.iOS: SharedAxisPageTransitionsBuilder(
+                      // fillColor: identityColor,
+                      transitionType: SharedAxisTransitionType.vertical,
+                    ),
+                  },
+                ),
+              ),
+              initialRoute: RouterGenerator.splashScreen,
+              onGenerateRoute: RouterGenerator.generateRoute,
+            ),
+          );
+        },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
