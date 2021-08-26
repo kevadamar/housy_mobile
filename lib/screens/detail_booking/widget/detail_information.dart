@@ -1,10 +1,13 @@
 import 'package:dev_mobile/models/booking_model.dart';
 import 'package:dev_mobile/models/house_model.dart';
 import 'package:dev_mobile/models/user_model.dart';
+import 'package:dev_mobile/providers/booking_provider.dart';
+import 'package:dev_mobile/services/services.dart';
 import 'package:dev_mobile/utils/constants.dart';
 import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class DetailInformation extends StatelessWidget {
   final BookingModel booking;
@@ -15,7 +18,9 @@ class DetailInformation extends StatelessWidget {
   Widget build(BuildContext context) {
     HouseModel house = booking.house;
     UserModel user = booking.user;
-    print(user.phoneNumber);
+
+    final bookingProvider =
+        Provider.of<BookingProvider>(context, listen: false);
 
     return Flexible(
       child: Container(
@@ -214,45 +219,145 @@ class DetailInformation extends StatelessWidget {
                 ],
               ),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Positioned(
-                bottom: 0,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context)
-                      .pushNamed(RouterGenerator.paymentScreen),
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: 1.sw,
-                    height: 50.h,
-                    padding: EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                        color: identityColor,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(15),
-                          topRight: Radius.circular(15),
-                        )),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(),
-                        Text(
+            Positioned(
+              bottom: 0,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 0.5.sw,
+                    child: GestureDetector(
+                      onTap: () async {
+                        int bookingId = booking.id;
+
+                        await Services.instance
+                            .deleteBooking(context, bookingId);
+
+                        Navigator.of(context).pushReplacementNamed(
+                          RouterGenerator.bookingScreen,
+                        );
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 1.sw,
+                        height: 50.h,
+                        padding: EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                            color: Colors.red[800],
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(15),
+                              // topRight: Radius.circular(15),
+                            )),
+                        child: Text(
+                          'CANCEL',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 0.5.sw,
+                    child: GestureDetector(
+                      onTap: () {
+                        bookingProvider.setTempPayment(booking);
+                        Navigator.of(context)
+                            .pushNamed(RouterGenerator.paymentScreen);
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 1.sw,
+                        height: 50.h,
+                        padding: EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                            color: identityColor,
+                            borderRadius: BorderRadius.only(
+                              // topLeft: Radius.circular(15),
+                              topRight: Radius.circular(15),
+                            )),
+                        child: Text(
                           'PAY',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.white,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            )
+            ),
+            // Align(
+            //   alignment: Alignment.bottomCenter,
+            //   child: Positioned(
+            //     bottom: 0,
+            //     child: GestureDetector(
+            //       onTap: () {
+            //         bookingProvider.setTempPayment(booking);
+            //         Navigator.of(context)
+            //             .pushNamed(RouterGenerator.paymentScreen);
+            //       },
+            //       child: Container(
+            //         alignment: Alignment.center,
+            //         width: 1.sw,
+            //         height: 50.h,
+            //         padding: EdgeInsets.all(15),
+            //         decoration: BoxDecoration(
+            //             color: identityColor,
+            //             borderRadius: BorderRadius.only(
+            //               topLeft: Radius.circular(15),
+            //               topRight: Radius.circular(15),
+            //             )),
+            //         child: Row(
+            //           children: [
+            //             SizedBox(
+            //               width: 0.4.sw,
+            //               child: Row(
+            //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //                 children: [
+            //                   SizedBox(),
+            //                   Text(
+            //                     'PAY',
+            //                     style: TextStyle(
+            //                       color: Colors.white,
+            //                       fontWeight: FontWeight.bold,
+            //                     ),
+            //                   ),
+            //                   Icon(
+            //                     Icons.arrow_forward_ios,
+            //                     color: Colors.white,
+            //                   ),
+            //                 ],
+            //               ),
+            //             ),
+            //             SizedBox(
+            //               width: 0.4.sw,
+            //               child: Row(
+            //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //                 children: [
+            //                   SizedBox(),
+            //                   Text(
+            //                     'PAY',
+            //                     style: TextStyle(
+            //                       color: Colors.white,
+            //                       fontWeight: FontWeight.bold,
+            //                     ),
+            //                   ),
+            //                   Icon(
+            //                     Icons.arrow_forward_ios,
+            //                     color: Colors.white,
+            //                   ),
+            //                 ],
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // )
           ],
         ),
       ),

@@ -9,6 +9,8 @@ class InputReuse extends StatelessWidget {
   final Widget icon;
   final bool isShowPassword;
   final TextInputType keyboardType;
+  final bool readOnly;
+  final bool filled;
 
   const InputReuse({
     Key key,
@@ -19,23 +21,27 @@ class InputReuse extends StatelessWidget {
     this.type = "text",
     this.isShowPassword = false,
     this.keyboardType = TextInputType.text,
+    this.readOnly = false,
+    this.filled = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       autovalidateMode: AutovalidateMode.onUserInteraction,
+      readOnly: readOnly,
       controller: controller,
       keyboardType: keyboardType,
       obscureText: isShowPassword,
       maxLines: type == 'multiline' ? 6 : 1,
       maxLength: type == 'multiline' ? 1000 : null,
       decoration: InputDecoration(
+        filled: filled,
         labelText: '$label',
         labelStyle: TextStyle(
           color: color,
         ),
-        hintText: 'Enter Your $label',
+        hintText: 'Masukkan $label',
         hintStyle: TextStyle(
           color: color,
         ),
@@ -73,7 +79,8 @@ class InputReuse extends StatelessWidget {
         }
 
         // validation format phone number
-        if (!phoneNumberValidatorRegExp.hasMatch(value) && type == 'phoneNumber') {
+        if (!phoneNumberValidatorRegExp.hasMatch(value) &&
+            type == 'phoneNumber') {
           return "Phone Number is not valid";
         }
         return null;

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dev_mobile/components/search_item/search_item_component.dart';
 import 'package:dev_mobile/providers/houses_provider.dart';
 import 'package:dev_mobile/screens/search/widget/house_item_card.dart';
@@ -15,8 +17,13 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   var searchController = TextEditingController();
+  var _budgetController = TextEditingController();
+  String city;
   @override
   Widget build(BuildContext context) {
+    final houseProvider = Provider.of<HousesProvider>(context, listen: false);
+
+    houseProvider.setShowFilter(false);
     return Scaffold(
       appBar: AppBar(
         title: Builder(
@@ -24,13 +31,99 @@ class _SearchScreenState extends State<SearchScreen> {
             builder: (context, houseProvider, child) => SearchItem(
               controller: searchController,
               autoFocus: true,
-              onSubmit: (value) =>
-                  houseProvider.searchHouseByFilterCity(value, context),
+              onSubmit: (value) {
+                setState(() {
+                  _budgetController = TextEditingController();
+                  houseProvider.searchHouseByFilterCity(value, context);
+                  city = value;
+                });
+              },
             ),
           ),
         ),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            houseProvider.setShowFilter(false);
+          },
+          icon: Icon(
+              Platform.isAndroid ? Icons.arrow_back : Icons.arrow_back_ios),
+        ),
+        actions: [
+          Consumer<HousesProvider>(
+            builder: (context, value, child) {
+              if (value.showFilter) {
+                return IconButton(
+                  onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  icon: Icon(
+                    Icons.filter_alt_outlined,
+                    size: 24.sp,
+                    color: Colors.white,
+                  ),
+                );
+              }
+              return Text('');
+            },
+          )
+        ],
       ),
       body: _bodyContent(context),
+      endDrawer: Consumer<HousesProvider>(
+        builder: (context, value, child) {
+          if (value.showFilter) {
+            return Drawer(
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: ListView(
+                  children: [
+                    Text('Budget'),
+                    TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      controller: _budgetController,
+                    ),
+                    SizedBox(
+                      height: 20.h,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        houseProvider.searchHouseByFilterCombination(
+                          city,
+                          context,
+                          _budgetController.text,
+                        );
+
+                        FocusScope.of(context).unfocus();
+                      },
+                      child: Container(
+                        width: 100.w,
+                        height: 50.h,
+                        padding: EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                            color: identityColor),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'FILTER',
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          }
+          return Text('');
+        },
+      ),
     );
   }
 
@@ -54,7 +147,10 @@ class _SearchScreenState extends State<SearchScreen> {
             //* If collection data null then fetch
             if (value.searchByFilter == null && value.onSearch == false) {
               return Center(
-                child: Text("Mau cari Rumah di lokasi lain?"),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text("Mau cari Rumah di lokasi lain?"),
+                ),
               );
             }
 
@@ -67,7 +163,10 @@ class _SearchScreenState extends State<SearchScreen> {
             //* If collection is not found
             if (value.searchByFilter.length == 0) {
               return Center(
-                child: Text("Rumah tidak ditemukan"),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text("Rumah tidak ditemukan"),
+                ),
               );
             }
 
@@ -84,15 +183,6 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
             );
-            // return ListView.builder(
-            //   shrinkWrap: true,
-            //   itemCount: 16,
-            //   physics: NeverScrollableScrollPhysics(),
-            //   itemBuilder: (context, index) {
-            //     var house = value.searchByFilter[1];
-            //     return HouseItemCard(house: house);
-            //   },
-            // );
           },
         );
       },

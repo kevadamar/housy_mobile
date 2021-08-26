@@ -1,8 +1,13 @@
 import 'dart:io';
 
+import 'package:dev_mobile/providers/auth_provider.dart';
+import 'package:dev_mobile/services/services.dart';
+import 'package:dev_mobile/utils/constants.dart';
+import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:dev_mobile/components/input_reuse/input_reuse_component.dart';
-import 'package:dev_mobile/utils/constants.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -10,12 +15,14 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  TextEditingController email = TextEditingController();
+  Services services = Services();
+
   TextEditingController fullname = TextEditingController();
   TextEditingController username = TextEditingController();
+  TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-  TextEditingController listAs = TextEditingController();
-  TextEditingController gender = TextEditingController();
+  // TextEditingController gender = TextEditingController();
+  // TextEditingController listAs = TextEditingController();
   TextEditingController phone = TextEditingController();
   TextEditingController address = TextEditingController();
 
@@ -30,6 +37,90 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _emailError = false;
   bool _passwordError = false;
+
+  bool isLoading = false;
+
+  Future<void> handleSignup() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      final response = await services.signup(
+          fullname.text,
+          username.text,
+          email.text,
+          password.text,
+          dropdownValueListAs,
+          dropdownValueGender,
+          phone.text,
+          address.text);
+
+      final status = response['status'];
+      final msg = status != 200 ? response['message'] : response['message'];
+
+      print('$status ${response['message']}');
+
+      final snackBar = SnackBar(
+        content: Text(
+          msg,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevation: 3,
+        duration: Duration(
+          milliseconds: 2500,
+        ),
+        backgroundColor: status == 200 ? Colors.green[400] : Colors.red[700],
+        width: 300, // Width of the SnackBar.
+        padding: EdgeInsets.symmetric(
+          horizontal: 8.0, // Inner padding for SnackBar content.
+        ),
+        behavior: SnackBarBehavior.floating,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      );
+      if (status == 200) {
+        final data = response['data'];
+        final role = data['user']['role'];
+
+        authProvider.setToken(data['token']);
+        _setPrefs(token: data['token'], role: role);
+
+        setState(() {
+          isLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            role == 'tenant'
+                ? RouterGenerator.homeScreen
+                : RouterGenerator.homeAdminScreen,
+            (route) => false,
+          );
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        });
+      }
+    } catch (e) {
+      print('error : $e');
+    }
+  }
+
+  Future<void> _setPrefs({String token, String role}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    prefs.setString('token', token);
+    prefs.setString('role', role);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +235,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   setState(() {
                     _secureText = !_secureText;
                   });
-                  ;
                 },
                 icon: Icon(
                   _secureText
@@ -158,51 +248,51 @@ class _SignupScreenState extends State<SignupScreen> {
           SizedBox(height: 40),
 
           // Dropdown input List As
-          // Container(
-          //   width: MediaQuery.of(context).size.width,
-          //   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          //   decoration: BoxDecoration(
-          //     // color: identityColor,
-          //     border: Border.all(
-          //       width: 1,
-          //       color: identityColor,
-          //     ),
-          //     borderRadius: BorderRadius.circular(20),
-          //   ),
-          //   child: DropdownButton<String>(
-          //     value: dropdownValueListAs,
-          //     hint: Text(
-          //       'List As',
-          //       style: TextStyle(
-          //         fontWeight: FontWeight.w500,
-          //         color: identityColor,
-          //       ),
-          //     ),
-          //     icon: const Icon(
-          //       Icons.keyboard_arrow_down,
-          //       color: Colors.deepPurple,
-          //     ),
-          //     elevation: 16,
-          //     style: const TextStyle(color: Colors.deepPurple),
-          //     underline: SizedBox(),
-          //     isExpanded: true,
-          //     onChanged: (String newValue) {
-          //       setState(() {
-          //         dropdownValueListAs = newValue;
-          //       });
-          //     },
-          //     items: <String>['Tenant', 'Owner']
-          //         .map<DropdownMenuItem<String>>((String value) {
-          //       return DropdownMenuItem<String>(
-          //         value: value,
-          //         child: Text(value),
-          //       );
-          //     }).toList(),
-          //   ),
-          // ),
-          // SizedBox(height: 40),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              // color: identityColor,
+              border: Border.all(
+                width: 1,
+                color: identityColor,
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: DropdownButton<String>(
+              value: dropdownValueListAs,
+              hint: Text(
+                'List As',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: identityColor,
+                ),
+              ),
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.deepPurple,
+              ),
+              elevation: 16,
+              style: const TextStyle(color: Colors.deepPurple),
+              underline: SizedBox(),
+              isExpanded: true,
+              onChanged: (String newValue) {
+                setState(() {
+                  dropdownValueListAs = newValue;
+                });
+              },
+              items: <String>['Tenant', 'Owner']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+          SizedBox(height: 40),
 
-          // Dropdown input List As
+          // Dropdown input Gender
           Container(
             width: MediaQuery.of(context).size.width,
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -273,8 +363,11 @@ class _SignupScreenState extends State<SignupScreen> {
               if (_emailError || _passwordError) {
                 print('err email or password');
               }
-              _formKey.currentState?.validate();
-              print(fullname.text);
+              final isValid = _formKey.currentState.validate();
+              FocusScope.of(context).unfocus();
+              if (isValid) {
+                handleSignup();
+              }
             },
             color: identityColor,
             elevation: 5,

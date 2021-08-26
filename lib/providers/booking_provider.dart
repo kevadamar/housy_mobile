@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class BookingProvider extends ChangeNotifier {
   /// state
   List<BookingModel> _data = [];
+  BookingModel _tempPayment;
   String _selectedImg;
   bool _isProcessing = false;
   File _imageFile;
@@ -16,7 +17,12 @@ class BookingProvider extends ChangeNotifier {
   bool get isProcessing => _isProcessing;
   File get imageFile => _imageFile;
 
+  BookingModel get tempPayment => _tempPayment;
+
   // set state
+
+  void setTempPayment(BookingModel data) => _tempPayment = data;
+
   void setData(List<BookingModel> res) {
     _data = res;
     notifyListeners();
@@ -45,4 +51,6 @@ class BookingProvider extends ChangeNotifier {
   void setIniSelectedImg(String img) => _selectedImg = img;
 
   void resetImageFile() => _imageFile = null;
+
+  void resetSelectedImg() => _selectedImg = null;
 }

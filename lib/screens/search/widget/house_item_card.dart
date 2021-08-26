@@ -44,6 +44,10 @@ class _HouseItemCardState extends State<HouseItemCard> {
           width: 200.w,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
+                topRight:
+                    index % 2 == 0 ? Radius.circular(15) : Radius.circular(0),
+                topLeft:
+                    index % 2 != 0 ? Radius.circular(15) : Radius.circular(0),
                 bottomLeft:
                     index % 2 == 0 ? Radius.circular(15) : Radius.circular(0),
                 bottomRight:
@@ -79,6 +83,16 @@ class _HouseItemCardState extends State<HouseItemCard> {
               ),
               Container(
                 padding: EdgeInsets.only(left: 5, right: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: index % 2 == 0
+                        ? Radius.circular(15)
+                        : Radius.circular(0),
+                    bottomRight: index % 2 != 0
+                        ? Radius.circular(15)
+                        : Radius.circular(0),
+                  ),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -131,7 +145,7 @@ class _HouseItemCardState extends State<HouseItemCard> {
                         ),
                         Expanded(
                           child: Text(
-                            data.city,
+                            data.city.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

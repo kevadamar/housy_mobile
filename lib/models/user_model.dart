@@ -28,7 +28,7 @@ class UserModel {
       email: json['email'],
       fullname: json['fullname'],
       gender: json['gender'],
-      imagePofile: json['image_pofile'],
+      imagePofile: json['image_profile'],
       phoneNumber: '0' + json['phone_number'],
       role: RoleModel.fromJson(json['listAs']),
       username: json['username'],

@@ -32,25 +32,34 @@ class _BookingScreenState extends State<BookingScreen> {
         Provider.of<BookingProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    bookingProvider.setIsProcessing(true);
-
     final response = await Services.instance.getBookings(authProvider.token);
 
     final msg = response['message'];
     final status = response['status'];
     final data = response['data'];
 
-    // print(data);
     if (data.length > 0) {
       final List<BookingModel> dataApi = [];
+      print(dataApi.length);
       data.forEach((api) {
         dataApi.add(BookingModel.fromJson(api));
       });
 
       bookingProvider.setData(dataApi);
+    } else {
+      bookingProvider.setData([]);
     }
     // Timer(Duration(seconds: 3), () => bookingProvider.setIsProcessing(false));
     bookingProvider.setIsProcessing(false);
+  }
+
+  Future<void> _refreshData() async {
+    final bookingProvider =
+        Provider.of<BookingProvider>(context, listen: false);
+
+    bookingProvider.setIsProcessingTrue();
+
+    await _fetchData();
   }
 
   @override
@@ -68,7 +77,8 @@ class _BookingScreenState extends State<BookingScreen> {
         backgroundColor: identityColor,
         title: Text('Booking'),
       ),
-      body: RefreshIndicator(
+      body: SafeArea(
+        child: RefreshIndicator(
           child: Consumer<BookingProvider>(
             builder: (context, value, child) {
               if (value.isProcessing) {
@@ -76,10 +86,14 @@ class _BookingScreenState extends State<BookingScreen> {
               }
 
               // return _bodyLoading();
-              return _body(context, value.data);
+              return value.data.length == 0
+                  ? _bodyNoData()
+                  : _body(context, value.data);
             },
           ),
-          onRefresh: _fetchData),
+          onRefresh: _refreshData,
+        ),
+      ),
     );
   }
 
@@ -163,11 +177,25 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
       );
 
+  _bodyNoData() => ListView(
+        children: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text("Oppss... Coba untuk booking dahulu"),
+            ),
+          )
+        ],
+      );
+
   _body(BuildContext context, List<BookingModel> booking) => ListView.builder(
         itemCount: booking.length,
         itemBuilder: (context, index) => Padding(
           padding: EdgeInsets.only(
-              top: 15, left: 10, right: 10, bottom: index == 19 ? 15 : 0),
+              top: 15,
+              left: 10,
+              right: 10,
+              bottom: index == (booking.length - 1) ? 15 : 0),
           child: GestureDetector(
             onTap: () => Navigator.pushReplacementNamed(
               context,
@@ -219,7 +247,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           height: 15,
                         ),
                         Text(
-                          '${formatDate(booking[0].checkin)} - ${formatDate(booking[0].checkout)}',
+                          '${formatDate(booking[index].checkin)} - ${formatDate(booking[index].checkout)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -230,7 +258,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           height: 10,
                         ),
                         Text(
-                          formatRupiah(booking[0].total.toString()),
+                          formatRupiah(booking[index].total.toString()),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -246,7 +274,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           padding: EdgeInsets.all(5),
                           color: Colors.red[50],
                           child: Text(
-                            booking[0].status,
+                            booking[index].status,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

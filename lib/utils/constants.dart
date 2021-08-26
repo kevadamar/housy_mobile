@@ -29,7 +29,7 @@ longDays(DateTime dateIn, DateTime dateOut) {
 statusString(int status) {
   switch (status) {
     case 0:
-      return 'Canceled';
+      return 'Rejected';
       break;
     case 1:
       return 'Waiting Payment';

@@ -5,7 +5,7 @@ class HistoryProvider extends ChangeNotifier {
   /// state
   List<HistoryModel> _data = [];
 
-  bool _isProcessing = false;
+  bool _isProcessing = true;
 
   // getter state
   List<HistoryModel> get data => _data;

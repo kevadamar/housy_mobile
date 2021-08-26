@@ -1,3 +1,5 @@
+import 'package:dev_mobile/models/city_model.dart';
+
 class HouseModel {
   int id;
   String name;
@@ -8,7 +10,7 @@ class HouseModel {
   String imageFirst;
   String imageSecond;
   String imageThird;
-  String city;
+  CityModel city;
   String bedroom;
   String bathroom;
   String area;
@@ -42,7 +44,7 @@ class HouseModel {
       imageFirst: json['imageFirst'],
       imageSecond: json['imageSecond'],
       imageThird: json['imageThird'],
-      city: json['city']['name'],
+      city: CityModel.fromJson(json['city']),
       bedroom: json['bedroom'].toString(),
       bathroom: json['bathroom'].toString(),
       area: json['area'].toString(),

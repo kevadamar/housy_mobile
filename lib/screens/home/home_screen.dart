@@ -55,19 +55,18 @@ class _HomeScreenState extends State<HomeScreen> {
     print('token $token');
     if (token != null) {
       authProvider.setToken(token);
+      authProvider.getUser();
     }
   }
 
   Future<void> _fetchData() async {
     // await _fetchDataHousesDisekitar();
-
+    print('fres');
     await _fetchDataHouses();
   }
 
   Future<void> _fetchDataHouses() async {
     final housesProvider = Provider.of<HousesProvider>(context, listen: false);
-
-    housesProvider.setIsProcessing(true);
 
     final response = await Services.instance.getHouses();
 
@@ -89,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchDataHousesDisekitar(String city) async {
     final housesProvider = Provider.of<HousesProvider>(context, listen: false);
 
-    housesProvider.setIsProcessingDisekitar(true);
+    // housesProvider.setIsProcessingSekitarTrue();
 
     final response = await Services.instance.getHousesDisekitar(city);
 
@@ -105,7 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       housesProvider.setDataSekitar(dataApi);
     }
-    housesProvider.setIsProcessingDisekitar(false);
+    Timer(Duration(seconds: 2),
+        () => housesProvider.setIsProcessingDisekitar(false));
   }
 
   getCoder() async {
@@ -123,12 +123,23 @@ class _HomeScreenState extends State<HomeScreen> {
     print(address.first.addressLine);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    setStatusBar(brightness: Brightness.light);
+  Future<void> _refreshData() async {
+    final housesProvider = Provider.of<HousesProvider>(context, listen: false);
 
     final locationProvider =
         Provider.of<LocationProvider>(context, listen: false);
+
+    housesProvider.setIsProcessingSekitarTrue();
+    housesProvider.setIsProcessingTrue();
+
+    await _fetchDataHouses();
+
+    await _fetchDataHousesDisekitar(locationProvider.city);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    setStatusBar(brightness: Brightness.light);
 
     return WillPopScope(
       onWillPop: () async {
@@ -159,80 +170,67 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        body: RefreshIndicator(
-          onRefresh: () async {
-            _fetchData();
-            print('loca ${locationProvider.city}');
-            _fetchDataHousesDisekitar(locationProvider.city);
-          },
-          key: _refresh,
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  Container(
-                    color: identityColor,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: _locationWidget(),
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await _refreshData();
+            },
+            key: _refresh,
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      color: identityColor,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: _locationWidget(),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: <Widget>[
-                        SizedBox(
-                          height: 12,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Consumer<HousesProvider>(
-                            builder: (context, value, child) {
-                              String text = 'Rumah disekitar anda';
-
-                              if (value.isProcessingSekitar) {
-                                text = 'Rumah disekitar anda';
-                              }
-
-                              text = value.dataSekitar.length <= 0
-                                  ? 'Rekomendasi rumah untuk anda'
-                                  : 'Rumah disekitar anda';
-
-                              return Text(
-                                text,
-                                style: TextStyle(
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              );
-                            },
+                    Expanded(
+                      flex: 1,
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: <Widget>[
+                          SizedBox(
+                            height: 12,
                           ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                              maxHeight: 0.30.sh, minHeight: 0.25.sh),
-                          child: Consumer<LocationProvider>(
-                              builder: (context, value, child) {
-                            if (value.city == null) {
-                              return ListView(
-                                  shrinkWrap: true,
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: [
-                                    ...List.generate(
-                                      5,
-                                      (index) => _shimmerEffectCard(),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Builder(
+                              builder: (context) => Consumer<HousesProvider>(
+                                builder: (context, value, child) {
+                                  String text = 'Rumah disekitar anda';
+
+                                  if (value.isProcessingSekitar) {
+                                    text = 'Rumah disekitar anda';
+                                  }
+
+                                  text = value.dataSekitar.length <= 0
+                                      ? 'Rekomendasi rumah untuk anda'
+                                      : 'Rumah disekitar anda';
+
+                                  return Text(
+                                    text,
+                                    style: TextStyle(
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ]);
-                            }
-                            _fetchDataHousesDisekitar(value.city);
-                            return Consumer<HousesProvider>(
-                              builder: (context, value, child) {
-                                if (value.isProcessingSekitar) {
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                                maxHeight: 0.30.sh, minHeight: 0.25.sh),
+                            child: Builder(
+                              builder: (context) => Consumer<LocationProvider>(
+                                  builder: (context, value, child) {
+                                if (value.city == null) {
                                   return ListView(
                                       shrinkWrap: true,
                                       physics: BouncingScrollPhysics(),
@@ -244,76 +242,106 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ]);
                                 }
+                                _fetchDataHousesDisekitar(value.city);
+                                return Builder(
+                                  builder: (context) =>
+                                      Consumer<HousesProvider>(
+                                    builder: (context, value, child) {
+                                      if (value.isProcessingSekitar) {
+                                        return ListView(
+                                            shrinkWrap: true,
+                                            physics: BouncingScrollPhysics(),
+                                            scrollDirection: Axis.horizontal,
+                                            children: [
+                                              ...List.generate(
+                                                5,
+                                                (index) => _shimmerEffectCard(),
+                                              ),
+                                            ]);
+                                      }
 
-                                return ListView(
-                                  shrinkWrap: true,
-                                  physics: BouncingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: value.dataSekitar.length > 0
-                                      ? List.generate(
-                                          value.dataSekitar.length,
-                                          (index) => _cardItemDisekitar(context,
-                                              value.dataSekitar[index]),
-                                        )
-                                      : List.generate(
-                                          value.data.length,
-                                          (index) => _cardItemDisekitar(
-                                              context, value.data[index]),
-                                        ),
+                                      return ListView(
+                                        shrinkWrap: true,
+                                        physics: BouncingScrollPhysics(),
+                                        scrollDirection: Axis.horizontal,
+                                        children: value.dataSekitar.length > 0
+                                            ? List.generate(
+                                                value.dataSekitar.length,
+                                                (index) => _cardItemDisekitar(
+                                                    context,
+                                                    value.dataSekitar[index]),
+                                              )
+                                            : List.generate(
+                                                value.data.length,
+                                                (index) => _cardItemDisekitar(
+                                                    context, value.data[index]),
+                                              ),
+                                      );
+                                    },
+                                  ),
                                 );
-                              },
-                            );
-                          }),
-                        ),
-                        SizedBox(
-                          height: 12,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(
-                            'Rumah',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                              }),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Column(mainAxisSize: MainAxisSize.max, children: [
-                          Consumer<HousesProvider>(
-                            builder: (context, value, child) => GridView.count(
-                              physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.82.h,
-                              children: value.isProcessing
-                                  ? [
-                                      ...List.generate(
-                                        4,
-                                        (index) => _shimmerEffectCard(),
-                                      ),
-                                    ]
-                                  : List.generate(
-                                      value.data.length,
-                                      (index) =>
-                                          _cardItem(context, value.data[index]),
-                                    ),
+                          SizedBox(
+                            height: 12,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text(
+                              'Rumah',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ]),
-                        SizedBox(
-                          height: 100.h,
-                        ),
-                      ],
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Column(mainAxisSize: MainAxisSize.max, children: [
+                            Builder(
+                              builder: (context) => Consumer<HousesProvider>(
+                                  builder: (context, value, child) {
+                                if (value.isProcessing) {
+                                  return GridView.count(
+                                      physics: NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      crossAxisCount: 2,
+                                      childAspectRatio: 0.82.h,
+                                      children: [
+                                        ...List.generate(
+                                          4,
+                                          (index) => _shimmerEffectCard(),
+                                        ),
+                                      ]);
+                                }
+                                return GridView.count(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.82.h,
+                                  children: List.generate(
+                                    value.data.length,
+                                    (index) =>
+                                        _cardItem(context, value.data[index]),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ]),
+                          SizedBox(
+                            height: 100.h,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              navigation(),
-            ],
-            alignment: AlignmentDirectional.bottomCenter,
+                  ],
+                ),
+                navigation(),
+              ],
+              alignment: AlignmentDirectional.bottomCenter,
+            ),
           ),
         ),
       ),
@@ -322,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget navigation() {
     return Positioned(
-      bottom: 30,
+      bottom: 30.h,
       child: Container(
         color: Colors.transparent,
         width: deviceWidth(),
@@ -410,26 +438,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              GestureDetector(
-                onTap: () => null,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          color: identityColor,
-                          borderRadius: BorderRadius.circular(50)),
-                      child: Icon(
-                        Icons.account_circle_outlined,
-                        color: Colors.white,
+              Consumer<AuthProvider>(
+                builder: (context, value, child) => GestureDetector(
+                  onTap: () {
+                    if (value.token == null) {
+                      Navigator.of(context).pushNamed(
+                        RouterGenerator.signinScreen,
+                      );
+                    } else {
+                      Navigator.of(context).pushNamed(
+                        RouterGenerator.accountScreen,
+                      );
+                    }
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: identityColor,
+                            borderRadius: BorderRadius.circular(50)),
+                        child: Icon(
+                          Icons.account_circle_outlined,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Text('Akun'),
-                  ],
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text('Akun'),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -635,7 +675,7 @@ Widget _cardItemDisekitar(BuildContext context, HouseModel data) {
                       ),
                       Expanded(
                         child: Text(
-                          data.city,
+                          data.city.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -744,7 +784,7 @@ Widget _cardItem(BuildContext context, HouseModel data) {
                       ),
                       Expanded(
                         child: Text(
-                          data.city,
+                          data.city.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

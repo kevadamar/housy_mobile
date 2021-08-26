@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dev_mobile/components/custom_appbar/custom_appbar_component.dart';
 import 'package:dev_mobile/models/book_now_model.dart';
 import 'package:dev_mobile/models/house_model.dart';
+import 'package:dev_mobile/providers/auth_provider.dart';
 import 'package:dev_mobile/providers/book_now_provider.dart';
 import 'package:dev_mobile/providers/houses_provider.dart';
 import 'package:dev_mobile/utils/api.dart';
@@ -32,11 +33,20 @@ class _DetailScreenState extends State<DetailScreen> {
     final bookNowProvider =
         Provider.of<BookNowProvider>(context, listen: false);
     final houseProvider = Provider.of<HousesProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Scaffold(
       appBar: CustomAppBar(
-        routeBack: !houseProvider.fromHome,
-        routeBackCb: RouterGenerator.homeScreen,
+        routeBack: authProvider.user != null
+            ? authProvider.user.role.name == 'tenant'
+                ? !houseProvider.fromHome
+                : false
+            : !houseProvider.fromHome,
+        routeBackCb: authProvider.user != null
+            ? authProvider.user.role.name == 'tenant'
+                ? RouterGenerator.homeScreen
+                : RouterGenerator.homeAdminScreen
+            : RouterGenerator.homeScreen,
       ),
       body: Stack(
         children: [
@@ -50,13 +60,17 @@ class _DetailScreenState extends State<DetailScreen> {
               Expanded(flex: 1, child: detailProductInformation(widget.house)),
             ],
           ),
-          floatingBookNow(bookNowProvider),
+          if ((authProvider.user != null &&
+                  authProvider.user.role.name == 'tenant') ||
+              authProvider.user == null)
+            floatingBookNow(bookNowProvider),
         ],
       ),
     );
   }
 
   Widget floatingBookNow(BookNowProvider provider) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     return Positioned(
       bottom: 0.03.sh,
       child: Row(
@@ -69,17 +83,24 @@ class _DetailScreenState extends State<DetailScreen> {
               child: LayoutBuilder(builder: (context, constraints) {
                 return GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      RouterGenerator.bookNowScreen,
-                      arguments: BookNowModel.obj(
-                        widget.house.id,
-                        widget.house.image,
-                        widget.house.price,
-                      ),
-                    );
-                    provider.setBookNowProvider(
-                        widget.house.price, widget.house.id);
+                    if (authProvider.token != null) {
+                      Navigator.pushNamed(
+                        context,
+                        RouterGenerator.bookNowScreen,
+                        arguments: BookNowModel.obj(
+                          widget.house.id,
+                          widget.house.image,
+                          widget.house.price,
+                        ),
+                      );
+                      provider.setBookNowProvider(
+                          widget.house.price, widget.house.id);
+                    } else {
+                      Navigator.pushNamed(
+                        context,
+                        RouterGenerator.signinScreen,
+                      );
+                    }
                   },
                   child: Align(
                     alignment: Alignment.center,
@@ -209,7 +230,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   width: 5,
                 ),
                 Text(
-                  house.address + ', ' + house.city,
+                  house.address + ', ' + house.city.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

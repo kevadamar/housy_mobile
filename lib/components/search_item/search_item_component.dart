@@ -30,7 +30,7 @@ class _SearchItemState extends State<SearchItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 35,
+      height: 35.h,
       decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: identityColor.withOpacity(0.5)),

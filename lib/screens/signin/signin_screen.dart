@@ -38,9 +38,11 @@ class _SigninScreenState extends State<SigninScreen> {
 
       final response = await services.signin(email.text, password.text);
 
-      final msg = response['message'];
       final status = response['status'];
-      final data = response['data'];
+      final msg =
+          status != 200 ? 'Username or Password wrong!' : response['message'];
+
+      print('$status');
 
       final snackBar = SnackBar(
         content: Text(
@@ -66,28 +68,39 @@ class _SigninScreenState extends State<SigninScreen> {
           borderRadius: BorderRadius.circular(10.0),
         ),
       );
+      if (status == 200) {
+        final data = response['data'];
+        final role = data['user']['role'];
 
-      authProvider.setToken(data['token']);
-      _setPrefs(token: data['token']);
-      print(data['token']);
+        authProvider.setToken(data['token']);
+        _setPrefs(token: data['token'], role: role);
 
-      setState(() {
-        isLoading = false;
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          RouterGenerator.homeScreen,
-          (route) => false,
-        );
-      });
+        setState(() {
+          isLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            role == 'tenant'
+                ? RouterGenerator.homeScreen
+                : RouterGenerator.homeAdminScreen,
+            (route) => false,
+          );
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        });
+      }
     } catch (e) {
       print('error : $e');
     }
   }
 
-  Future<void> _setPrefs({String token}) async {
+  Future<void> _setPrefs({String token, String role}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     prefs.setString('token', token);
+    prefs.setString('role', role);
   }
 
   @override
@@ -200,19 +213,19 @@ class _SigninScreenState extends State<SigninScreen> {
           SizedBox(height: 20),
 
           // forgot password
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              GestureDetector(
-                onTap: () =>
-                    null, //Navigator.pushNamed(context, ForgotPasswordScreen.routeName),
-                child: Text(
-                  "Forgot Password",
-                  style: TextStyle(decoration: TextDecoration.underline),
-                ),
-              )
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.end,
+          //   children: [
+          //     GestureDetector(
+          //       onTap: () =>
+          //           null, //Navigator.pushNamed(context, ForgotPasswordScreen.routeName),
+          //       child: Text(
+          //         "Forgot Password",
+          //         style: TextStyle(decoration: TextDecoration.underline),
+          //       ),
+          //     )
+          //   ],
+          // ),
           SizedBox(height: 20),
           MaterialButton(
             minWidth: 400,

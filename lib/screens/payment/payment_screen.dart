@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:dev_mobile/providers/auth_provider.dart';
 import 'package:dev_mobile/providers/booking_provider.dart';
+import 'package:dev_mobile/services/services.dart';
 import 'package:dev_mobile/utils/constants.dart';
+import 'package:dev_mobile/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,6 +17,7 @@ class PaymentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bookingProvider =
         Provider.of<BookingProvider>(context, listen: false);
+    final authPRovider = Provider.of<AuthProvider>(context, listen: false);
 
     var placeholder = Container(
       width: double.infinity,
@@ -21,13 +25,38 @@ class PaymentScreen extends StatelessWidget {
       child: Image.asset('./assets/images/placeholder.png'),
     );
 
+    final snackBar = (String msg, int status) => SnackBar(
+          content: Text(
+            msg,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          elevation: 3,
+          duration: Duration(
+            milliseconds: 2500,
+          ),
+          backgroundColor: status == 200 ? Colors.green[400] : Colors.red[700],
+          width: 300, // Width of the SnackBar.
+          padding: EdgeInsets.symmetric(
+            horizontal: 8.0, // Inner padding for SnackBar content.
+          ),
+          behavior: SnackBarBehavior.floating,
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        );
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Payment'),
         leading: IconButton(
           onPressed: () {
             bookingProvider.resetImageFile();
-            print(bookingProvider.imageFile);
+
             Navigator.of(context).pop();
           },
           icon: Icon(
@@ -52,6 +81,10 @@ class PaymentScreen extends StatelessWidget {
                           width: 0.4.sw,
                           child: Text(
                             'Payment To ',
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         SizedBox(
@@ -59,25 +92,29 @@ class PaymentScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Owner',
-                              ),
+                              Text('BCA',
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.bold,
+                                  )),
                               SizedBox(
                                 height: 5.h,
                               ),
                               Text(
                                 '1556-1205-1255-32',
-                              ),
-                              SizedBox(
-                                height: 5.h,
-                              ),
-                              Text(
-                                'BCA',
+                                style: TextStyle(
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ],
                           ),
                         )
                       ],
+                    ),
+                    SizedBox(
+                      height: 40.h,
                     ),
                     Divider(
                       thickness: 5,
@@ -100,13 +137,13 @@ class PaymentScreen extends StatelessWidget {
                       )),
                       child: Consumer<BookingProvider>(
                         builder: (context, value, child) => InkWell(
-                            onTap: () {
-                              dialogFileFoto(context);
-                            },
-                            child: value.imageFile == null
-                                ? placeholder
-                                : Image.file(value.imageFile,
-                                    fit: BoxFit.fill)),
+                          onTap: () {
+                            dialogFileFoto(context);
+                          },
+                          child: value.imageFile == null
+                              ? placeholder
+                              : Image.file(value.imageFile, fit: BoxFit.fill),
+                        ),
                       ),
                     ),
                   ],
@@ -116,24 +153,59 @@ class PaymentScreen extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 child: Positioned(
                   bottom: 0,
-                  child: GestureDetector(
-                    onTap: () => print('pay'),
-                    child: Container(
-                      alignment: Alignment.center,
-                      width: 1.sw,
-                      height: 50.h,
-                      decoration: BoxDecoration(
-                        color: identityColor,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(15),
-                          topRight: Radius.circular(15),
+                  child: Consumer<BookingProvider>(
+                    builder: (context, value, child) => GestureDetector(
+                      onTap: () async {
+                        if (value.imageFile != null) {
+                          String houseId =
+                              value.tempPayment.house.id.toString();
+                          String bookingId = value.tempPayment.id.toString();
+                          DateTime checkin = value.tempPayment.checkin;
+                          DateTime checkout = value.tempPayment.checkout;
+                          int total = value.tempPayment.total;
+                          String token = authPRovider.token;
+
+                          final response = await Services.instance.orderHouse(
+                              value.imageFile,
+                              houseId,
+                              bookingId,
+                              checkin,
+                              checkout,
+                              total,
+                              token);
+                          int status = response['status'];
+                          print(response['status']);
+                          String msg = status <= 203
+                              ? 'Success Booking House!'
+                              : 'Invalid Booking';
+
+                          Navigator.of(context).pushReplacementNamed(
+                              RouterGenerator.historyScreen);
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(snackBar(msg, 200));
+                          value.resetImageFile();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              snackBar('Sertakan Bukti Pembayaran', 400));
+                        }
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 1.sw,
+                        height: 50.h,
+                        decoration: BoxDecoration(
+                          color: identityColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(15),
+                            topRight: Radius.circular(15),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        'BOOKING NOW',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          'BOOKING NOW',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -174,7 +246,6 @@ class PaymentScreen extends StatelessWidget {
 
     if (image?.path != null) {
       bookingProvider.setImageFile(File(image.path));
-      print(image.path);
     }
     Navigator.of(context).pop();
   }
