@@ -11,6 +11,9 @@ class SizeConfig {
   static double heightMultiplier;
   static double widthMultiplier;
 
+  static double defaultHeight = 800;
+  static double defaultWeight = 800;
+
   void init(BoxConstraints constraints) {
     _screenWidth = constraints.maxWidth;
     _screenHeight = constraints.maxHeight;
@@ -24,5 +27,13 @@ class SizeConfig {
     widthMultiplier = _blockSizeHorizontal;
 
     print(_screenWidth);
+  }
+
+  void getScreenHeight(BuildContext context){
+     return (MediaQuery.of(context).size.height / defaultHeight);
+  }
+
+  void getScreenWidth(BuildContext context){
+    return (MediaQuery.of(context).size.width / defaultWeight);
   }
 }
